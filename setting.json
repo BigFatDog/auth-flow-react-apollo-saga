@@ -1,0 +1,11 @@
+{
+  "apolloLogging": true,
+  "apolloEngineKey": null,
+  "graphqlUrl": "http://localhost:3010/graphql",
+  "wsURI": "ws:localhost:5000/graphql",
+  "wsPort": 5000,
+  "mongodb": {
+    "url": "mongodb://localhost:27017/auth-flow"
+  },
+  "SECRET": "Big_Fat_Dog"
+}

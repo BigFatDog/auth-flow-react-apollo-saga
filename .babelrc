@@ -1,0 +1,35 @@
+{
+  "plugins": [
+    ["babel-plugin-styled-components", {
+      "ssr": false,
+      "minify": false,
+      "displayName": true,
+      "preprocess": false
+    }],
+    "babel-plugin-inline-import-graphql-ast",
+    "dynamic-import-node"
+  ],
+  "presets": [
+    [
+      "env",
+      {
+        "targets": {
+          "node": "current",
+          "uglify": false
+        },
+        "modules": false
+      }
+    ],
+    "react",
+    "es2015",
+    "stage-0"
+  ],
+  "env": {
+    "test": {
+      "plugins": [
+        "transform-es2015-modules-commonjs",
+        "dynamic-import-node"
+      ]
+    }
+  }
+}

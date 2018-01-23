@@ -1,0 +1,9 @@
+#import "./Posts.graphql"
+
+subscription {
+  postUpdated(id:1) {
+		id
+    votes
+  }
+}
+
