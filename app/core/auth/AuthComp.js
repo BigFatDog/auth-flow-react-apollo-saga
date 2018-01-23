@@ -10,7 +10,6 @@ import {
   makeSelectIsAuthenticating,
 } from './selector';
 
-import { verifyTokenRequest } from './actions';
 import saga from './saga';
 import injectSaga from '../../utils/injectSaga';
 import Loading from '../../components/Loading';
