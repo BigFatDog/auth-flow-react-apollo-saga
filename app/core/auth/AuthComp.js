@@ -18,17 +18,19 @@ import Loading from '../../components/Loading';
 export default function requireAuthentication(Component) {
   class AuthenticatedComponent extends React.Component {
     componentWillMount() {
-      this.props.dispatch(verifyTokenRequest());
+      if (localStorage.getItem('token') === null || localStorage.getItem('refreshToken') === null ) {
+        this.props.dispatch(push(`/login`));
+      } else {
+        if (
+          this.props.isAuthenticating === false &&
+          this.props.isAuthenticated === false
+        ) {
+          this.props.dispatch(push(`/login`));
+        }
+      }
     }
 
     render() {
-      if (
-        this.props.isAuthenticating === false &&
-        this.props.isAuthenticated === false
-      ) {
-        this.props.dispatch(push(`/login`));
-      }
-
       return (
         <div>
           {this.props.isAuthenticating === true ? (
