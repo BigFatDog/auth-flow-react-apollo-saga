@@ -18,6 +18,14 @@ import Loading from '../../components/Loading';
 export default function requireAuthentication(Component) {
   class AuthenticatedComponent extends React.Component {
     componentWillMount() {
+      this.checkAuth();
+    }
+
+    componentWillReceiveProps() {
+      this.checkAuth();
+    }
+
+    checkAuth() {
       if (localStorage.getItem('token') === null || localStorage.getItem('refreshToken') === null ) {
         this.props.dispatch(push(`/login`));
       } else {
