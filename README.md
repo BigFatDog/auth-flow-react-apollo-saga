@@ -1,5 +1,7 @@
 # Auth flow with React, Apollo, Redux-Saga and Mongo
 
+An SSR version of this project: [auth-flow-ssr](https://github.com/BigFatDog/auth-flow-ssr)
+
 ## Setup
 1. install mongodb
 2. clone this project from https://github.com/BigFatDog/auth-flow-react-apollo-saga.git
