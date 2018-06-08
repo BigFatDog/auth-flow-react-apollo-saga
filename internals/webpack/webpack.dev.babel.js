@@ -29,9 +29,10 @@ const plugins = [
 
 if (DllConfig) {
   glob.sync(`${DllConfig.path}/*.dll.js`).forEach((dllPath) => {
-    plugins.push(new AddAssetHtmlPlugin({
-      filepath: dllPath,
-      includeSourcemap: false,
+    plugins.push(
+      new AddAssetHtmlPlugin({
+        filepath: dllPath,
+        includeSourcemap: false,
     }));
   });
 }
@@ -51,14 +52,7 @@ const dependencyHandlers = () => {
 
   // If the package.json does not have a dllPlugin property, use the CommonsChunkPlugin
   if (!DllConfig) {
-    return [
-      new webpack.optimize.CommonsChunkPlugin({
-        name: 'vendor',
-        children: true,
-        minChunks: 2,
-        async: true,
-      }),
-    ];
+    return [];
   }
 
   const dllPath = path.resolve(process.cwd(), DllConfig.path || 'node_modules/auth-flow-dlls');

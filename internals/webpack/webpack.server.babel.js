@@ -22,6 +22,7 @@ const createCSSRule = (ext, ruleList) => ({
 });
 
 export default {
+  mode: 'production',
   entry: path.resolve(process.cwd(), 'app/server/index.js'),
 
   output: {
@@ -116,6 +117,5 @@ export default {
     }),
     new webpack.NamedModulesPlugin(),
     new webpack.LoaderOptionsPlugin({ minimize: true }),
-    new webpack.optimize.ModuleConcatenationPlugin(),
   ],
 };
