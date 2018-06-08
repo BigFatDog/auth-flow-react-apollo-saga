@@ -7,7 +7,6 @@ import { func, instanceOf } from 'prop-types';
 import { push } from 'react-router-redux';
 
 import messages from './messages';
-import LocaleToggle from '../../LocaleToggle';
 
 import { NavBar, NavHeader, NavLink } from './Styles';
 

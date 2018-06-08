@@ -6,7 +6,7 @@ export default SECRET => async (req, res, next) => {
   const token = req.cookies['x-token'];
 
   if (!token) {
-    res.status(200).json({
+    res.status(401).json({
       success: false,
       message: 'Token missing',
     });
