@@ -16,6 +16,7 @@ import { DllConfig, entries } from '../dllConfig';
 const outputPath = join(process.cwd(), DllConfig.path);
 
 export default baseConfig({
+  mode: 'development',
   context: process.cwd(),
   entry: {
     authFlowDeps: entries(pkg),

@@ -12,6 +12,7 @@ import webpack from 'webpack';
 process.noDeprecation = true;
 
 export default (options) => ({
+  mode: options.mode,
   entry: options.entry,
   output: Object.assign({ // Compile into js/build.js
     path: path.resolve(process.cwd(), 'build'),
@@ -61,28 +62,51 @@ export default (options) => ({
         }],
       },
       {
-        test: /\.(eot|svg|otf|ttf|woff|woff2)$/,
+        test: /\.(eot|otf|ttf|woff|woff2)$/,
         use: 'file-loader',
+      },
+      {
+        test: /\.svg$/,
+        use: [
+          {
+            loader: 'svg-url-loader',
+            options: {
+              // Inline files smaller than 10 kB
+              limit: 10 * 1024,
+              noquotes: true,
+            },
+          },
+        ],
       },
       {
         test: /\.(jpg|png|gif)$/,
         use: [
-          'file-loader',
+          {
+            loader: 'url-loader',
+            options: {
+              // Inline files smaller than 10 kB
+              limit: 10 * 1024,
+            },
+          },
           {
             loader: 'image-webpack-loader',
-            query: {
+            options: {
               mozjpeg: {
-                progressive: true,
+                enabled: false,
+                // NOTE: mozjpeg is disabled as it causes errors in some Linux environments
+                // Try enabling it in your environment by switching the config to:
+                // enabled: true,
+                // progressive: true,
               },
               gifsicle: {
                 interlaced: false,
               },
               optipng: {
-                optimizationLevel: 4,
+                optimizationLevel: 7,
               },
               pngquant: {
-                quality: '75-90',
-                speed: 3,
+                quality: '65-90',
+                speed: 4,
               },
             },
           },
@@ -91,10 +115,6 @@ export default (options) => ({
       {
         test: /\.html$/,
         use: 'html-loader',
-      },
-      {
-        test: /\.json$/,
-        use: 'json-loader',
       },
       {
         test: /\.(mp4|webm)$/,

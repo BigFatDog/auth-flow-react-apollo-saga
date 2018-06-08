@@ -1,11 +1,12 @@
 import path from 'path';
-import webpack from 'webpack';
+import { HashedModuleIdsPlugin } from 'webpack';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import OfflinePlugin from 'offline-plugin';
-import ManifestPlugin from 'webpack-manifest-plugin';
+import WebpackPwaManifest from 'webpack-pwa-manifest';
 import baseConfig from './webpack.base.babel';
 
 const prodConfig = baseConfig({
+  mode: 'production',
   // In production, we skip all hot-reloading stuff
   entry: [
     path.join(process.cwd(), 'app/app.js'),
@@ -17,16 +18,16 @@ const prodConfig = baseConfig({
     chunkFilename: '[name].[chunkhash].chunk.js',
   },
 
-  plugins: [
-    new ManifestPlugin({ fileName: 'assets.json' }),
-    new webpack.optimize.ModuleConcatenationPlugin(),
-    new webpack.optimize.CommonsChunkPlugin({
-      name: 'vendor',
-      children: true,
-      minChunks: 2,
-      async: true,
-    }),
+  optimization: {
+    minimize: true,
+    nodeEnv: 'production',
+    sideEffects: true,
+    concatenateModules: true,
+    splitChunks: { chunks: 'all' },
+    runtimeChunk: true,
+  },
 
+  plugins: [
     // Minify and optimize the index.html
     new HtmlWebpackPlugin({
       template: 'app/index.html',
@@ -68,6 +69,25 @@ const prodConfig = baseConfig({
       safeToUseOptionalCaches: true,
 
       AppCache: false,
+    }),
+
+    new WebpackPwaManifest({
+      name: 'Auth',
+      short_name: 'Auth',
+      background_color: '#fafafa',
+      theme_color: '#b1624d',
+      icons: [
+        {
+          src: path.resolve('app/images/icon-512x512.png'),
+          sizes: [72, 96, 120, 128, 144, 152, 167, 180, 192, 384, 512],
+        },
+      ],
+    }),
+
+    new HashedModuleIdsPlugin({
+      hashFunction: 'sha256',
+      hashDigest: 'hex',
+      hashDigestLength: 20,
     }),
   ],
 
