@@ -12,7 +12,7 @@ import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
 import trim from 'lodash/trim';
 
-import injectSaga from '../../../utils/injectSaga';
+import injectSaga from '../../../core/runtime/injectSaga';
 import saga from './saga';
 
 import { signUpRequest, signUpFailure } from '../../../core/auth/actions';
@@ -199,8 +199,8 @@ class SignUp extends Component {
               <BottomPrompt>
                 <FormattedMessage {...messages.signUpHaveAccount} />
                 &nbsp;<Link to={'/login'}>
-                <FormattedMessage {...messages.signIn} />
-              </Link>
+                  <FormattedMessage {...messages.signIn} />
+                </Link>
               </BottomPrompt>
             </LoginPanel>
           </LoginBox>
@@ -225,7 +225,13 @@ const mapDispatchToProps = dispatch => {
   };
 };
 
-const withConnect = connect(mapStateToProps, mapDispatchToProps);
+const withConnect = connect(
+  mapStateToProps,
+  mapDispatchToProps
+);
 const withSaga = injectSaga({ key: 'signUp', saga });
 
-export default compose(withConnect, withSaga)(injectIntl(SignUp));
+export default compose(
+  withConnect,
+  withSaga
+)(injectIntl(SignUp));

@@ -12,7 +12,7 @@ import { NavBar, NavHeader, NavLink } from './Styles';
 
 import { logout } from '../../../core/auth/actions';
 import saga from './saga';
-import injectSaga from '../../../utils/injectSaga';
+import injectSaga from '../../../core/runtime/injectSaga';
 
 class Header extends Component {
   static propTypes = {
@@ -63,7 +63,13 @@ const mapDispatchToProps = dispatch => {
   };
 };
 
-const withConnect = connect(null, mapDispatchToProps);
+const withConnect = connect(
+  null,
+  mapDispatchToProps
+);
 const withSaga = injectSaga({ key: 'logout', saga });
 
-export default compose(withConnect, withSaga)(Header);
+export default compose(
+  withConnect,
+  withSaga
+)(Header);

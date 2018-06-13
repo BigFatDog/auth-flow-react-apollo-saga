@@ -11,7 +11,7 @@ import {
 } from './selector';
 
 import saga from './saga';
-import injectSaga from '../../utils/injectSaga';
+import injectSaga from '../runtime/injectSaga';
 import Loading from '../../components/Loading';
 
 export default function requireAuthentication(Component) {
@@ -25,7 +25,10 @@ export default function requireAuthentication(Component) {
     }
 
     checkAuth() {
-      if (localStorage.getItem('token') === null || localStorage.getItem('refreshToken') === null ) {
+      if (
+        localStorage.getItem('token') === null ||
+        localStorage.getItem('refreshToken') === null
+      ) {
         this.props.dispatch(push(`/login`));
       } else {
         if (
@@ -57,7 +60,13 @@ export default function requireAuthentication(Component) {
     isAuthenticating: makeSelectIsAuthenticating(),
   });
 
-  const withConnect = connect(mapStateToProps, null);
+  const withConnect = connect(
+    mapStateToProps,
+    null
+  );
   const withSaga = injectSaga({ key: 'verify', saga });
-  return compose(withConnect, withSaga)(AuthenticatedComponent);
+  return compose(
+    withConnect,
+    withSaga
+  )(AuthenticatedComponent);
 }

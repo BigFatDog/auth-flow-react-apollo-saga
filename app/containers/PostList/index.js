@@ -12,8 +12,8 @@ import { compose } from 'redux';
 import { createStructuredSelector } from 'reselect';
 import { graphql } from 'react-apollo';
 
-import injectReducer from '../../utils/injectReducer';
-import injectSaga from '../../utils/injectSaga';
+import injectReducer from '../../core/runtime/injectReducer';
+import injectSaga from '../../core/runtime/injectSaga';
 import messages from './messages';
 
 import { changeUsername } from './actions';
@@ -77,7 +77,10 @@ const mapStateToProps = createStructuredSelector({
   username: makeSelectUsername(),
 });
 
-const withConnect = connect(mapStateToProps, mapDispatchToProps);
+const withConnect = connect(
+  mapStateToProps,
+  mapDispatchToProps
+);
 
 const withReducer = injectReducer({ key: 'home', reducer });
 const withSaga = injectSaga({ key: 'home', saga });
@@ -90,6 +93,9 @@ const withGraphQL = graphql(DashboardListQuery, {
   },
 });
 
-export default compose(withGraphQL, withReducer, withSaga, withConnect)(
-  HomePage
-);
+export default compose(
+  withGraphQL,
+  withReducer,
+  withSaga,
+  withConnect
+)(HomePage);
