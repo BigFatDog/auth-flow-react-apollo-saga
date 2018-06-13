@@ -12,7 +12,7 @@ const allowedModes = [RESTART_ON_REMOUNT, DAEMON, ONCE_TILL_UNMOUNT];
 const checkKey = key =>
   invariant(
     isString(key) && !isEmpty(key),
-    '(client/utils...) injectSaga: Expected `key` to be a non empty string'
+    '(core/runtime...) injectSaga: Expected `key` to be a non empty string'
   );
 
 const checkDescriptor = descriptor => {
@@ -22,12 +22,12 @@ const checkDescriptor = descriptor => {
   };
   invariant(
     conformsTo(descriptor, shape),
-    '(client/utils...) injectSaga: Expected a valid saga descriptor'
+    '(core/runtime...) injectSaga: Expected a valid saga descriptor'
   );
 };
 
 export function injectSagaFactory(store, isValid) {
-  return function injectSaga(key, descriptor = {}, args) {
+  return function injectSaga(key, descriptor = {}, ...args) {
     if (!isValid) checkStore(store);
 
     const newDescriptor = {
@@ -56,7 +56,7 @@ export function injectSagaFactory(store, isValid) {
     ) {
       store.injectedSagas[key] = {
         ...newDescriptor,
-        task: store.runSaga(saga, args),
+        task: store.runSaga(saga, ...args),
       }; // eslint-disable-line no-param-reassign
     }
   };

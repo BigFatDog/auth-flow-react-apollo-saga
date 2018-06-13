@@ -99,6 +99,7 @@ const dependencyHandlers = () => {
 };
 
 export default baseConfig({
+  mode: 'development',
   // Add hot reloading in development
   entry: [
     'eventsource-polyfill', // Necessary for hot reloading with IE

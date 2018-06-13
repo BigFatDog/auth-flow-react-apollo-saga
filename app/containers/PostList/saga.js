@@ -4,7 +4,7 @@
 
 import { call, put, select, takeLatest } from 'redux-saga/effects';
 
-import request from '../../utils/request';
+import request from '../../core/http/request';
 import { makeSelectUsername } from './/selectors';
 
 /**

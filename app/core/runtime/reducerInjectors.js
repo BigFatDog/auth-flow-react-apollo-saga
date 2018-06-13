@@ -4,7 +4,7 @@ import isFunction from 'lodash/isFunction';
 import isString from 'lodash/isString';
 
 import checkStore from './checkStore';
-import createReducer from '../reducers';
+import createReducer from '../../reducers';
 
 export function injectReducerFactory(store, isValid) {
   return function injectReducer(key, reducer) {
@@ -12,7 +12,7 @@ export function injectReducerFactory(store, isValid) {
 
     invariant(
       isString(key) && !isEmpty(key) && isFunction(reducer),
-      '(client/utils...) injectReducer: Expected `reducer` to be a reducer function'
+      '(core/runtime...) injectReducer: Expected `reducer` to be a reducer function'
     );
 
     // Check `store.injectedReducers[key] === reducer` for hot reloading when a key is the same but a reducer is different

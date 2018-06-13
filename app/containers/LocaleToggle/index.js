@@ -54,4 +54,7 @@ export function mapDispatchToProps(dispatch) {
   };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(LocaleToggle);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(LocaleToggle);
