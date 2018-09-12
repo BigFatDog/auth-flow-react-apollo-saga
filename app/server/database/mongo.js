@@ -25,12 +25,12 @@ export default app => {
     console.log('MongoDB disconnected!');
     mongoose.connect(
       Settings.mongodb.url,
-      { auto_reconnect: true }
+      { auto_reconnect: true, useNewUrlParser: true }
     );
   });
 
   mongoose.connect(
     Settings.mongodb.url,
-    { auto_reconnect: true }
+    { auto_reconnect: true, useNewUrlParser: true }
   );
 };

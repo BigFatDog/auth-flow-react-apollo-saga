@@ -6,11 +6,11 @@ const typeDefs = `
     posts: [Post] # the list of Posts by this author
   }
 
-  type Post @cacheControl(maxAge: 240) {
+  type Post {
     id: Int!
     title: String
     author: Author
-    votes: Int @cacheControl(maxAge: 30)
+    votes: Int
   }
 
   # the schema allows the following query:
