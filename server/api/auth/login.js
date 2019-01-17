@@ -1,13 +1,12 @@
 import bcrypt from 'bcrypt';
 import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
-
-import {
-  INVALID_CREDENTIALS,
-  USER_NOT_FOUND,
-} from '../../../core/auth/messages';
 import { createTokens } from './token';
 import UserModel from '../user/model/UserModel';
+
+// from app/core/auth/messages.js
+const INVALID_CREDENTIALS = 'auth/fail/INVALID_CREDENTIALS';
+const USER_NOT_FOUND = 'auth/fail/USER_NOT_FOUND';
 
 // Verify username and password, if passed, we return jwt token for client
 // We also include xsrfToken for client, which will be used to prevent CSRF attack

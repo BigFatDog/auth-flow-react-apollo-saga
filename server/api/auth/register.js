@@ -2,14 +2,14 @@ import bcrypt from 'bcrypt';
 import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
 
-import {
-  EMAIL_ALREADY_EXIST,
-  USER_ALREADY_EXIST,
-} from '../../../core/auth/messages';
 import { createTokens } from './token';
 import UserModel from '../user/model/UserModel';
 
 const SALT_ROUNDS = 10;
+
+// from app/core/auth/messages.js
+export const USER_ALREADY_EXIST = 'auth/fail/USER_ALREADY_EXIST';
+export const EMAIL_ALREADY_EXIST = 'auth/fail/EMAIL_ALREADY_EXIST';
 
 const register = SECRET => async (req, res) => {
   const { username, email, password } = req.body;
