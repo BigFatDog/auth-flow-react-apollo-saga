@@ -2,8 +2,8 @@
  * COMMON WEBPACK CONFIGURATION
  */
 
-import path from 'path';
-import webpack from 'webpack';
+const path = require('path');
+const webpack = require('webpack');
 
 // Remove this line once the following warning goes away (it was meant for webpack loader authors not users):
 // 'DeprecationWarning: loaderUtils.parseQuery() received a non-string value which can be problematic,
@@ -11,16 +11,26 @@ import webpack from 'webpack';
 // in the next major version of loader-utils.'
 process.noDeprecation = true;
 
-export default (options) => ({
+module.exports = options => ({
   mode: options.mode,
   entry: options.entry,
-  output: Object.assign({ // Compile into js/build.js
-    path: path.resolve(process.cwd(), 'build'),
-    publicPath: '/',
-  }, options.output), // Merge with env dependent settings
+  output: Object.assign(
+    {
+      // Compile into js/build.js
+      path: path.resolve(process.cwd(), 'build'),
+      publicPath: '/',
+    },
+    options.output,
+  ), // Merge with env dependent settings
+  optimization: options.optimization,
   module: {
     noParse: /(mapbox-gl)\.js$/, //https://github.com/mapbox/mapbox-gl-js/issues/4348
     rules: [
+      {
+        test: /\.(graphql|gql)$/,
+        exclude: /node_modules/,
+        loader: 'graphql-tag/loader',
+      },
       {
         test: /\.js$/, // Transform all .js files required somewhere with Babel
         exclude: /node_modules/,
@@ -125,11 +135,6 @@ export default (options) => ({
           },
         },
       },
-      {
-        test: /\.(graphql|gql)$/,
-        exclude: /node_modules/,
-        use: 'graphql-tag/loader',
-      },
     ],
   },
   plugins: options.plugins.concat([
@@ -143,30 +148,19 @@ export default (options) => ({
       moment$: 'moment/moment.js',
       crossfilter2: 'crossfilter2',
     }),
-
     // Always expose NODE_ENV to webpack, in order to use `process.env.NODE_ENV`
-    // inside your code for any environment checks; UglifyJS will automatically
+    // inside your code for any environment checks; Terser will automatically
     // drop any unreachable code.
     new webpack.DefinePlugin({
-      __CLIENT__: true,
       'process.env': {
         NODE_ENV: JSON.stringify(process.env.NODE_ENV),
       },
     }),
-    new webpack.NamedModulesPlugin(),
   ]),
   resolve: {
-    modules: ['app', 'node_modules'],
-    extensions: [
-      '.js',
-      '.jsx',
-      '.react.js',
-    ],
-    mainFields: [
-      'browser',
-      'jsnext:main',
-      'main',
-    ],
+    modules: ['node_modules', 'app'],
+    extensions: ['.js', '.jsx', '.react.js'],
+    mainFields: ['browser', 'jsnext:main', 'main'],
   },
   devtool: options.devtool,
   target: 'web', // Make web variables accessible to webpack, e.g. window
