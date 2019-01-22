@@ -106,4 +106,4 @@ if (module.hot) {
   module.hot.accept();
 }
 
-export {}
+export {};

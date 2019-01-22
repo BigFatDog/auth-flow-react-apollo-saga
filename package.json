@@ -42,7 +42,7 @@
     "test": "cross-env NODE_ENV=test jest --coverage",
     "test:watch": "cross-env NODE_ENV=test jest --watchAll",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
-    "pretty": "prettier --single-quote --trailing-comma es5 --write \"{app,__{tests,mocks}__}/**/*.js\""
+    "pretty": "prettier --single-quote --trailing-comma es5 --write \"{app,server,__{tests,mocks}__}/**/*.js\""
   },
   "dependencies": {
     "apollo-cache-inmemory": "^1.2.10",
