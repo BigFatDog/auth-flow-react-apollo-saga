@@ -171,7 +171,8 @@ class Login extends Component {
               </form>
               <BottomPrompt>
                 <FormattedMessage {...messages.registerPrompt} />
-                &nbsp;<Link to="/signup">
+                &nbsp;
+                <Link to="/signup">
                   <FormattedMessage {...messages.signUp} />
                 </Link>
               </BottomPrompt>

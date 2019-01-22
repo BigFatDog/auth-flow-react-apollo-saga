@@ -198,7 +198,8 @@ class SignUp extends Component {
               </form>
               <BottomPrompt>
                 <FormattedMessage {...messages.signUpHaveAccount} />
-                &nbsp;<Link to={'/login'}>
+                &nbsp;
+                <Link to={'/login'}>
                   <FormattedMessage {...messages.signIn} />
                 </Link>
               </BottomPrompt>
