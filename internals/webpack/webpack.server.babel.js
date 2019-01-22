@@ -17,12 +17,19 @@ fs.readdirSync("node_modules")
 
 module.exports = {
   mode: 'production',
-  entry: path.resolve(process.cwd(), 'server/index.js'),
+  entry: {
+    es: path.join(process.cwd(), 'server/main.js')
+  },
 
   output: {
     path: path.resolve(process.cwd(), 'build/server'),
     filename: 'bundle.js',
-    sourceMapFilename: '[name].[chunkhash].js.map',
+    libraryTarget: "commonjs"
+  },
+
+  resolve: {
+    modules: ['node_modules', 'server'],
+    extensions: ['.js', '.jsx', '.react.js', '.graphql', '.gql'],
   },
 
   target: 'node',
@@ -35,13 +42,20 @@ module.exports = {
     __dirname: true
   },
 
-  externals: [nodeExternals()],
+  externals: [nodeExternals({options: {
+      whitelist: ['esm']
+    }})],
 
   module: {
     rules: [
       {
-        test: reScript,
-        exclude: [/node_modules/, /vendor/],
+        test: /\.(graphql|gql)$/,
+        exclude: /node_modules/,
+        loader: 'graphql-tag/loader',
+      },
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
         use: {
           loader: 'babel-loader',
           query: {

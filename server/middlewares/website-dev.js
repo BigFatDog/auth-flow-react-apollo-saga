@@ -3,7 +3,7 @@ import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
 import webpackHotMiddleware from 'webpack-hot-middleware';
 
-import webpackConfig from '../../../internals/webpack/webpack.dev.babel';
+import webpackConfig from '../../internals/webpack/webpack.dev.babel';
 
 function createWebpackMiddleware(compiler, publicPath) {
   return webpackDevMiddleware(compiler, {

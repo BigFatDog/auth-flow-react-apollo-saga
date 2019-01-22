@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import chalk from 'chalk';
-import Settings from '../../../setting.json';
+import Settings from '../../setting.json';
 import logger from '../logger';
 
 export default app => {

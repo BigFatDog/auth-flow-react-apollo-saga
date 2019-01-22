@@ -6,7 +6,7 @@ import ngrokTunnel from 'ngrok';
 import logger from './logger';
 import argv from './argv';
 import port from './port';
-import setting from '../../setting.json';
+import setting from '../setting.json';
 
 import tokenMiddleware from './middlewares/token-middleware';
 import { graphqlMiddleware, graphiqlMiddleware } from './middlewares/graphql';
@@ -105,3 +105,5 @@ if (module.hot) {
 
   module.hot.accept();
 }
+
+export {}
