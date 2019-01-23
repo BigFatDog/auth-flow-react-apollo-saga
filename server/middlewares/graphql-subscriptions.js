@@ -4,7 +4,7 @@ import { createServer } from 'http';
 
 import schema from '../api';
 import logger from '../logger';
-import settings from '../../../setting.json';
+import settings from '../../setting.json';
 
 let subscriptionServer;
 

@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 import { FormattedMessage } from 'react-intl';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
-import { func, instanceOf } from 'prop-types';
-import { push } from 'react-router-redux';
+import { func } from 'prop-types';
+import { push } from 'connected-react-router';
 
 import messages from './messages';
 

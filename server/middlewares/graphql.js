@@ -1,6 +1,6 @@
 import { graphqlExpress, graphiqlExpress } from 'apollo-server-express';
 import 'isomorphic-fetch';
-import settings from '../../../setting.json';
+import settings from '../../setting.json';
 import schema from '../api';
 
 const graphqlMiddleware = () =>

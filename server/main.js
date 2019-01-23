@@ -6,7 +6,7 @@ import ngrokTunnel from 'ngrok';
 import logger from './logger';
 import argv from './argv';
 import port from './port';
-import setting from '../../setting.json';
+import setting from '../setting.json';
 
 import tokenMiddleware from './middlewares/token-middleware';
 import { graphqlMiddleware, graphiqlMiddleware } from './middlewares/graphql';
@@ -67,16 +67,13 @@ app.listen(port, host, err => {
 
   // Connect to ngrok in dev mode
   if (ngrok) {
-    ngrok.connect(
-      port,
-      (innerErr, url) => {
-        if (innerErr) {
-          return logger.error(innerErr);
-        }
-
-        logger.appStarted(port, prettyHost, url);
+    ngrok.connect(port, (innerErr, url) => {
+      if (innerErr) {
+        return logger.error(innerErr);
       }
-    );
+
+      logger.appStarted(port, prettyHost, url);
+    });
   } else {
     logger.appStarted(port, prettyHost);
   }
@@ -105,3 +102,5 @@ if (module.hot) {
 
   module.hot.accept();
 }
+
+export {};
