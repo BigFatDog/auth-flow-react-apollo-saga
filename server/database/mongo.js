@@ -23,14 +23,14 @@ export default app => {
   });
   db.on('disconnected', function() {
     console.log('MongoDB disconnected!');
-    mongoose.connect(
-      Settings.mongodb.url,
-      { auto_reconnect: true, useNewUrlParser: true }
-    );
+    mongoose.connect(Settings.mongodb.url, {
+      auto_reconnect: true,
+      useNewUrlParser: true,
+    });
   });
 
-  mongoose.connect(
-    Settings.mongodb.url,
-    { auto_reconnect: true, useNewUrlParser: true }
-  );
+  mongoose.connect(Settings.mongodb.url, {
+    auto_reconnect: true,
+    useNewUrlParser: true,
+  });
 };
