@@ -4,8 +4,7 @@ import { WebSocketLink } from 'apollo-link-ws';
 import { onError } from 'apollo-link-error';
 import { getMainDefinition } from 'apollo-utilities';
 import { setContext } from 'apollo-link-context';
-import * as LocalForage from 'localforage';
-import { push } from 'react-router-redux';
+import { push } from 'connected-react-router';
 
 import Setting from '../../../setting.json';
 

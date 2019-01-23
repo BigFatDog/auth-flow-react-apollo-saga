@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import chalk from 'chalk';
-import Settings from '../../../setting.json';
+import Settings from '../../setting.json';
 import logger from '../logger';
 
 export default app => {
@@ -23,14 +23,14 @@ export default app => {
   });
   db.on('disconnected', function() {
     console.log('MongoDB disconnected!');
-    mongoose.connect(
-      Settings.mongodb.url,
-      { auto_reconnect: true, useNewUrlParser: true }
-    );
+    mongoose.connect(Settings.mongodb.url, {
+      auto_reconnect: true,
+      useNewUrlParser: true,
+    });
   });
 
-  mongoose.connect(
-    Settings.mongodb.url,
-    { auto_reconnect: true, useNewUrlParser: true }
-  );
+  mongoose.connect(Settings.mongodb.url, {
+    auto_reconnect: true,
+    useNewUrlParser: true,
+  });
 };

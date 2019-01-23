@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { injectIntl, intlShape, FormattedMessage } from 'react-intl';
-import { instanceOf, func } from 'prop-types';
+import { func } from 'prop-types';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
 import { Link } from 'react-router-dom';
 import { createStructuredSelector } from 'reselect';
 import { compose } from 'redux';
@@ -171,7 +170,8 @@ class Login extends Component {
               </form>
               <BottomPrompt>
                 <FormattedMessage {...messages.registerPrompt} />
-                &nbsp;<Link to="/signup">
+                &nbsp;
+                <Link to="/signup">
                   <FormattedMessage {...messages.signUp} />
                 </Link>
               </BottomPrompt>
