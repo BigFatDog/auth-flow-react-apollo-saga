@@ -1,29 +1,23 @@
-import { graphqlExpress, graphiqlExpress } from 'apollo-server-express';
+import { ApolloServer } from 'apollo-server-express';
 import 'isomorphic-fetch';
-import settings from '../../setting.json';
 import schema from '../api';
 
-const graphqlMiddleware = () =>
-  graphqlExpress(req => ({
-    schema,
-    debug: true,
-    context: {
-      user: req.user,
-    },
-    formatError: error => ({
-      message: error.message,
-      locations: error.locations,
-      stack: error.stack,
-      path: error.path,
-    }),
-    tracing: true,
-    cacheControl: true,
-  }));
+const server = new ApolloServer({
+  schema,
+  debug: true,
+  context: ({ req }) => ({ user: req.user }),
+  formatError: error => ({
+    message: error.message,
+    locations: error.locations,
+    stack: error.stack,
+    path: error.path,
+  }),
+  tracing: true,
+  cacheControl: true,
+  introspection: true,
+  playground: true,
+});
 
-const graphiqlMiddleware = () =>
-  graphiqlExpress({
-    endpointURL: '/graphql',
-    subscriptionsEndpoint: settings.wsURI,
-  });
+const graphqlMiddleware = app => server.applyMiddleware({ app });
 
-export { graphqlMiddleware, graphiqlMiddleware };
+export default graphqlMiddleware;
