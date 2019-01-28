@@ -9,7 +9,7 @@ import port from './port';
 import setting from '../setting.json';
 
 import tokenMiddleware from './middlewares/token-middleware';
-import { graphqlMiddleware, graphiqlMiddleware } from './middlewares/graphql';
+import graphqlMiddleware from './middlewares/graphql';
 
 import login from './api/auth/login';
 import register from './api/auth/register';
@@ -37,8 +37,8 @@ app.use(bodyParser.json());
 startMongo(app);
 
 // middlewares
-app.use('/graphql', tokenMiddleware(setting.SECRET), graphqlMiddleware());
-app.get('/graphiql', graphiqlMiddleware());
+app.use('/graphql', tokenMiddleware(setting.SECRET));
+graphqlMiddleware(app);
 addGraphQLSubscriptions(app);
 
 if (isDev) {

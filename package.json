@@ -1,6 +1,6 @@
 {
   "name": "auth-flow-react-apollo-saga",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Full stack login/register flow with React, Apollo, Redux, Redux-saga and MongoDB.",
   "repository": {
     "type": "git",
@@ -60,7 +60,7 @@
     "apollo-link-schema": "^1.1.4",
     "apollo-link-ws": "^1.0.12",
     "apollo-logger": "0.3.0",
-    "apollo-server-express": "^1.3.6",
+    "apollo-server-express": "^2.3.2",
     "apollo-upload-server": "^7.1.0",
     "apollo-utilities": "^1.1.2",
     "axios": "^0.18.0",
