@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { refreshTokens } from '../api/auth/token';
 
 export default SECRET => async (req, res, next) => {
-  const token = req.cookies['x-token'] || req.headers['x-token'];
+  const token = req.cookies['x-token'] || req.headers['token'];
 
   if (!token) {
     res.status(401).json({
@@ -19,7 +19,7 @@ export default SECRET => async (req, res, next) => {
 
     next();
   } catch (err) {
-    const refreshToken = req.cookies['x-refresh-token'];
+    const refreshToken = req.cookies['x-refresh-token'] || req.headers['refreshToken'];
 
     if (!refreshToken) {
       res.status(401).json({
