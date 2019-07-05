@@ -1,6 +1,6 @@
 {
   "name": "auth-flow-react-apollo-saga",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Full stack login/register flow with React, Apollo, Redux, Redux-saga and MongoDB.",
   "repository": {
     "type": "git",
