@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { FormattedMessage } from 'react-intl';
 import { compose } from 'redux';
@@ -8,51 +8,41 @@ import { push } from 'connected-react-router';
 
 import messages from './messages';
 
-import { NavBar, NavHeader, NavLink } from './Styles';
+import { NavBar, NavHeader } from './Styles';
 
 import { logout } from '../../../core/auth/actions';
 import saga from './saga';
-import injectSaga from '../../../core/runtime/injectSaga';
+import { useInjectSaga } from '../../../core/runtime/injectSaga';
 
-class Header extends Component {
-  static propTypes = {
-    onLogout: func.isRequired,
-  };
+const Header = props => {
+  useInjectSaga({ key: 'logout', saga });
+  const { onLogout } = props;
 
-  constructor(props) {
-    super(props);
+  return (
+    <NavBar>
+      <NavHeader>
+        <Link to="/" className="nav-link">
+          Home
+        </Link>
 
-    this.logout = e => this._logout(e);
-  }
+        <Link to="/post" className="nav-link">
+          Post
+        </Link>
+      </NavHeader>
+      <NavHeader>
+        <a className="nav-link" />
 
-  _logout() {
-    const { onLogout } = this.props;
-    onLogout();
-  }
+        <a className="nav-link" onClick={e => onLogout(e)}>
+          <FormattedMessage {...messages.logout} />
+        </a>
+      </NavHeader>
+    </NavBar>
+  );
+};
 
-  render() {
-    return (
-      <NavBar>
-        <NavHeader>
-          <Link to="/" className="nav-link">
-            Home
-          </Link>
-
-          <Link to="/post" className="nav-link">
-            Post
-          </Link>
-        </NavHeader>
-        <NavHeader>
-          <a className="nav-link" />
-
-          <a className="nav-link" onClick={this.logout}>
-            <FormattedMessage {...messages.logout} />
-          </a>
-        </NavHeader>
-      </NavBar>
-    );
-  }
-}
+Header.propTypes = {
+  onLogout: func.isRequired,
+};
 
 const mapDispatchToProps = dispatch => {
   return {
@@ -67,9 +57,5 @@ const withConnect = connect(
   null,
   mapDispatchToProps
 );
-const withSaga = injectSaga({ key: 'logout', saga });
 
-export default compose(
-  withConnect,
-  withSaga
-)(Header);
+export default compose(withConnect)(Header);

@@ -1,5 +1,4 @@
-import { call, put, fork, race, takeLatest } from 'redux-saga/effects';
-import { delay } from 'redux-saga';
+import { call, put, fork, race, delay, takeLatest } from 'redux-saga/effects';
 
 import { signUpSuccess, signUpFailure } from '../../../core/auth/actions';
 import { post } from '../../../core/reqeust/post';
@@ -10,7 +9,7 @@ export function* signUp(action) {
   try {
     const { res, timeout } = yield race({
       res: call(post, '/signup', action.payload),
-      timeout: call(delay, 10 * 1000),
+      timeout: delay(10 * 1000),
     });
 
     if (res) {
@@ -26,6 +25,7 @@ export function* signUp(action) {
       yield put(signUpFailure({ errorMsg: REQUEST_TIMEOUT }));
     }
   } catch (err) {
+    console.log(err)
     yield put(signUpFailure({ errorMsg: err }));
   }
 }
@@ -34,5 +34,5 @@ export function* signUp(action) {
  * Root saga manages watcher lifecycle
  */
 export default function* auth() {
-  yield fork(takeLatest, SIGN_UP_REQUEST, signUp);
+  yield takeLatest(SIGN_UP_REQUEST, signUp);
 }

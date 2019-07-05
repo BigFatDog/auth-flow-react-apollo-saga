@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { injectIntl, intlShape, FormattedMessage } from 'react-intl';
 import { func } from 'prop-types';
@@ -11,7 +11,8 @@ import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
 import trim from 'lodash/trim';
 
-import injectSaga from '../../../core/runtime/injectSaga';
+import { useInjectReducer } from '../../../core/runtime/injectReducer';
+import { useInjectSaga } from '../../../core/runtime/injectSaga';
 import saga from './saga';
 
 import { loginRequest, loginFailure } from '../../../core/auth/actions';
@@ -48,140 +49,117 @@ const isStringSafe = str =>
  * finest solution: https://stackoverflow.com/questions/12374442/chrome-browser-ignoring-autocomplete-off/38961567#38961567
  *
  */
-class Login extends Component {
-  static propTypes = {
-    intl: intlShape.isRequired,
-    onLoginRequest: func.isRequired,
-    isAuthenticated: PropTypes.bool,
-    isAuthenticating: PropTypes.bool,
-    errorMsg: PropTypes.string,
-  };
+const Login = props => {
+  useInjectSaga({ key: 'login', saga });
+  const [username, setUserName] = useState('');
+  const [password, setPassword] = useState('');
+  const [submitted, setSubmitted] = useState(false);
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      username: '',
-      password: '',
-      submitted: false,
-    };
+  const {
+    intl,
+    isAuthenticated,
+    isAuthenticating,
+    errorMsg,
+    isWebServerConnected,
+  } = props;
 
-    this.changeUsername = e => this._changeUsername(e.target.value);
-    this.changePassword = e => this._changePassword(e.target.value);
-    this.login = e => this._login();
-  }
-
-  _changeUsername(value) {
-    this.setState({
-      username: value,
-    });
-  }
-  _changePassword(value) {
-    this.setState({
-      password: value,
-    });
-  }
-
-  async _login() {
-    const { username, password } = this.state;
-
-    this.setState({
-      submitted: true,
-    });
+  const login = () => {
+    setSubmitted(true);
+    const { loginFailure, onLoginRequest, history } = props;
 
     if (!isStringSafe(username) || !isStringSafe(password)) {
-      this.props.loginFailure({ errorMsg: ALL_ARE_REQUIRED });
+      loginFailure({ errorMsg: ALL_ARE_REQUIRED });
       return;
     }
 
-    this.props.onLoginRequest({
+    console.log('---')
+
+    onLoginRequest({
       username,
       password,
-      push: this.props.history.push,
+      push: history.push,
     });
-  }
+  };
 
-  render() {
-    const {
-      intl,
-      isAuthenticated,
-      isAuthenticating,
-      errorMsg,
-      isWebServerConnected,
-    } = this.props;
-    const { username, password, errorMessage, submitted } = this.state;
+  const namePlaceholder = intl.formatMessage({ id: messages.username.id });
+  const passwordPlaceholder = intl.formatMessage({
+    id: messages.password.id,
+  });
 
-    const namePlaceholder = intl.formatMessage({ id: messages.username.id });
-    const passwordPlaceholder = intl.formatMessage({
-      id: messages.password.id,
-    });
+  let Errors = null;
 
-    let Errors = null;
-
-    if (isAuthenticating === true) {
-      Errors = (
-        <ErrorBox>
-          <i className="fas fa-cog fa-spin error-icon" />{' '}
-          <FormattedMessage {...messages.authenticating} />
-        </ErrorBox>
-      );
-    } else if (isAuthenticated === false && submitted === true) {
-      Errors = (
-        <ErrorBox>{getAuthError(errorMsg, isWebServerConnected)}</ErrorBox>
-      );
-    }
-
-    return (
-      <CentralContainer>
-        <LoginBoxContainer>
-          <LoginBox>
-            <LoginPanel>
-              {Errors}
-
-              <form>
-                <InputTextWrapper>
-                  <i className="fas fa-user input-icon" />
-                  <input
-                    type="text"
-                    required=""
-                    autoComplete="new-password"
-                    value={username}
-                    placeholder={namePlaceholder}
-                    onChange={this.changeUsername}
-                    name="username"
-                    className="input-text username"
-                  />
-                </InputTextWrapper>
-                <InputTextWrapper>
-                  <i className="fas fa-lock input-icon" />
-                  <input
-                    type="password"
-                    required=""
-                    autoComplete="new-password"
-                    value={password}
-                    placeholder={passwordPlaceholder}
-                    onChange={this.changePassword}
-                    name="password"
-                    className="input-text password"
-                  />
-                </InputTextWrapper>
-                <SubmitButton onClick={this.login}>
-                  <FormattedMessage {...messages.submit} />
-                </SubmitButton>
-              </form>
-              <BottomPrompt>
-                <FormattedMessage {...messages.registerPrompt} />
-                &nbsp;
-                <Link to="/signup">
-                  <FormattedMessage {...messages.signUp} />
-                </Link>
-              </BottomPrompt>
-            </LoginPanel>
-          </LoginBox>
-        </LoginBoxContainer>
-      </CentralContainer>
+  if (isAuthenticating === true) {
+    Errors = (
+      <ErrorBox>
+        <i className="fas fa-cog fa-spin error-icon" />{' '}
+        <FormattedMessage {...messages.authenticating} />
+      </ErrorBox>
+    );
+  } else if (isAuthenticated === false && submitted === true) {
+    Errors = (
+      <ErrorBox>{getAuthError(errorMsg, isWebServerConnected)}</ErrorBox>
     );
   }
-}
+
+  return (
+    <CentralContainer>
+      <LoginBoxContainer>
+        <LoginBox>
+          <LoginPanel>
+            {Errors}
+
+            <form>
+              <InputTextWrapper>
+                <i className="fas fa-user input-icon" />
+                <input
+                  type="text"
+                  required=""
+                  autoComplete="new-password"
+                  value={username}
+                  placeholder={namePlaceholder}
+                  onChange={e => setUserName(e.target.value)}
+                  name="username"
+                  className="input-text username"
+                />
+              </InputTextWrapper>
+              <InputTextWrapper>
+                <i className="fas fa-lock input-icon" />
+                <input
+                  type="password"
+                  required=""
+                  autoComplete="new-password"
+                  value={password}
+                  placeholder={passwordPlaceholder}
+                  onChange={e => setPassword(e.target.value)}
+                  name="password"
+                  className="input-text password"
+                />
+              </InputTextWrapper>
+              <SubmitButton onClick={e => login()}>
+                <FormattedMessage {...messages.submit} />
+              </SubmitButton>
+            </form>
+            <BottomPrompt>
+              <FormattedMessage {...messages.registerPrompt} />
+              &nbsp;
+              <Link to="/signup">
+                <FormattedMessage {...messages.signUp} />
+              </Link>
+            </BottomPrompt>
+          </LoginPanel>
+        </LoginBox>
+      </LoginBoxContainer>
+    </CentralContainer>
+  );
+};
+
+Login.propTypes = {
+  intl: intlShape.isRequired,
+  onLoginRequest: func.isRequired,
+  isAuthenticated: PropTypes.bool,
+  isAuthenticating: PropTypes.bool,
+  errorMsg: PropTypes.string,
+};
 
 const mapStateToProps = createStructuredSelector({
   isAuthenticated: makeSelectIsAuthenticated(),
@@ -202,9 +180,4 @@ const withConnect = connect(
   mapStateToProps,
   mapDispatchToProps
 );
-const withSaga = injectSaga({ key: 'login', saga });
-
-export default compose(
-  withConnect,
-  withSaga
-)(injectIntl(Login));
+export default compose(withConnect)(injectIntl(Login));
