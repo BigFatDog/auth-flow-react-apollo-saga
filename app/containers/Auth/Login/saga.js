@@ -14,7 +14,6 @@ export function* login(action) {
     });
 
     if (res) {
-      console.log(res)
       const {
         userId,
         userName,

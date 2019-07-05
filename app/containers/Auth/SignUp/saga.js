@@ -25,7 +25,7 @@ export function* signUp(action) {
       yield put(signUpFailure({ errorMsg: REQUEST_TIMEOUT }));
     }
   } catch (err) {
-    console.log(err)
+    console.log(err);
     yield put(signUpFailure({ errorMsg: err }));
   }
 }

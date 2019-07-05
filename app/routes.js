@@ -49,8 +49,8 @@ const EmptyLayoutRoute = ({ component: Component, ...rest }) => {
 export default function Routes() {
   return (
     <Switch>
-      <MasterLayout exact path="/" component={(WelcomePage)} />
-      <MasterLayout path="/post" component={(PostPage)} />
+      <MasterLayout exact path="/" component={WelcomePage} />
+      <MasterLayout path="/post" component={PostPage} />
       <EmptyLayoutRoute path="/login" component={Login} />
       <EmptyLayoutRoute path="/signup" component={SignUp} />
 

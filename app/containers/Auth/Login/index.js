@@ -72,7 +72,7 @@ const Login = props => {
       return;
     }
 
-    console.log('---')
+    console.log('---');
 
     onLoginRequest({
       username,
