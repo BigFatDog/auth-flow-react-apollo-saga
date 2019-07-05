@@ -11,8 +11,8 @@ import messages from './messages';
 import { NavBar, NavHeader } from './Styles';
 
 import { logout } from '../../../core/auth/actions';
-import saga from './saga';
 import { useInjectSaga } from '../../../core/runtime/injectSaga';
+import saga from './saga';
 
 const Header = props => {
   useInjectSaga({ key: 'logout', saga });
@@ -44,14 +44,12 @@ Header.propTypes = {
   onLogout: func.isRequired,
 };
 
-const mapDispatchToProps = dispatch => {
-  return {
-    onLogout: evt => {
-      dispatch(logout());
-      dispatch(push('/login'));
-    },
-  };
-};
+const mapDispatchToProps = dispatch => ({
+  onLogout: evt => {
+    dispatch(logout());
+    dispatch(push('/login'));
+  },
+});
 
 const withConnect = connect(
   null,

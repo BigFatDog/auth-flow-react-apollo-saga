@@ -8,7 +8,7 @@ import messages from './messages';
 
 import DashboardListQuery from './Posts.graphql';
 
-const HomePage = props => {
+const PostList = props => {
   const { posts } = props;
 
   const aList = posts || [];
@@ -26,7 +26,7 @@ const HomePage = props => {
   );
 };
 
-HomePage.propTypes = {
+PostList.propTypes = {
   loading: PropTypes.bool,
   posts: PropTypes.array,
   error: PropTypes.oneOfType([PropTypes.object, PropTypes.bool]),
@@ -45,4 +45,4 @@ const withGraphQL = graphql(DashboardListQuery, {
 export default compose(
   withGraphQL,
   memo
-)(HomePage);
+)(PostList);

@@ -87,18 +87,27 @@ export default function configureStore(initialState = {}, history) {
 
   // redux storage will be lost on page refresh.
   // so verify token during init
-  post('/verifyToken')
-    .then(tokeRes => {
-      if (tokeRes.data.success === true) {
-        const { userId, userName, token, refreshToken } = tokeRes.data;
-        store.dispatch(loginSuccess({ userId, userName, token, refreshToken }));
-      } else {
-        store.dispatch(loginFailure({ errorMsg: tokeRes.data.message }));
-      }
-    })
-    .catch(e => {
-      store.dispatch(loginFailure({ errorMsg: e }));
-    });
+  if (
+    localStorage.getItem('token') === null ||
+    localStorage.getItem('refreshToken') === null
+  ) {
+    store.dispatch(loginFailure({ errorMsg: 'already logout' }));
+  } else {
+    post('/verifyToken')
+      .then(tokeRes => {
+        if (tokeRes.data.success === true) {
+          const { userId, userName, token, refreshToken } = tokeRes.data;
+          store.dispatch(
+            loginSuccess({ userId, userName, token, refreshToken })
+          );
+        } else {
+          store.dispatch(loginFailure({ errorMsg: tokeRes.data.message }));
+        }
+      })
+      .catch(e => {
+        store.dispatch(loginFailure({ errorMsg: e }));
+      });
+  }
 
   // Make reducers hot reloadable, see http://mxs.is/googmo
   /* istanbul ignore next */
