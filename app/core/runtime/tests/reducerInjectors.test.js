@@ -14,15 +14,16 @@ import getInjectors, { injectReducerFactory } from '../reducerInjectors';
 
 const initialState = fromJS({ reduced: 'soon' });
 
-const reducer = (state = initialState, action) => produce(state, draft => {
-  switch (action.type) {
-    case 'TEST':
-      draft.reduced = action.payload;
-      break;
-    default:
-      break;
-  }
-});
+const reducer = (state = initialState, action) =>
+  produce(state, draft => {
+    switch (action.type) {
+      case 'TEST':
+        draft.reduced = action.payload;
+        break;
+      default:
+        break;
+    }
+  });
 
 describe('reducer injectors', () => {
   let store;

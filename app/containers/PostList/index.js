@@ -1,48 +1,30 @@
-import React, { memo } from 'react';
-import PropTypes from 'prop-types';
+import React from 'react';
 import { FormattedMessage } from 'react-intl';
-import { compose } from 'redux';
-import { graphql } from 'react-apollo';
-
+import { Query } from 'react-apollo';
+import gql from 'graphql-tag';
 import messages from './messages';
 
-import DashboardListQuery from './Posts.graphql';
+import PostListQuery from './Posts.graphql';
 
-const PostList = props => {
-  const { posts } = props;
+const PostList = props => (
+  <Query query={PostListQuery}>
+    {({ loading, error, data }) => {
+      if (loading) return 'Loading...';
+      if (error) return `Error! ${error.message}`;
+      return (
+        <div>
+          <FormattedMessage {...messages.welcome} />
+          <ul className="list-group">
+            {data.posts.map(d => (
+              <li className="list-group-item" key={d.id}>
+                {d.title}
+              </li>
+            ))}
+          </ul>
+        </div>
+      );
+    }}
+  </Query>
+);
 
-  const aList = posts || [];
-  const postList = aList.map(d => (
-    <li className="list-group-item" key={d.id}>
-      {d.title}
-    </li>
-  ));
-
-  return (
-    <div>
-      <FormattedMessage {...messages.welcome} />
-      <ul className="list-group">{postList}</ul>
-    </div>
-  );
-};
-
-PostList.propTypes = {
-  loading: PropTypes.bool,
-  posts: PropTypes.array,
-  error: PropTypes.oneOfType([PropTypes.object, PropTypes.bool]),
-  repos: PropTypes.oneOfType([PropTypes.array, PropTypes.bool]),
-  onSubmitForm: PropTypes.func,
-};
-
-const withGraphQL = graphql(DashboardListQuery, {
-  props: ({ data }) => {
-    const { loading, error, posts } = data;
-    if (error) throw new Error(error);
-    return { loading, posts };
-  },
-});
-
-export default compose(
-  withGraphQL,
-  memo
-)(PostList);
+export default PostList;

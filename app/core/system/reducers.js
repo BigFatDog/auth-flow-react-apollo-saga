@@ -18,38 +18,37 @@ const initialState = {
   graphqlConnected: true,
 };
 
-const reducer = (state = initialState, action) => produce(state, draft => {
-  switch (action.type) {
-    case WEB_SERVER_DISCONNECTED:
-      draft.webServerConnected = false;
-      break;
-    case WEB_SERVER_CONNECTED:
-      draft.webServerConnected = true;
-      break;
-    case MONGODB_DISCONNECTED:
-      draft.mongodbConnected = false;
-      break;
-    case MONGODB_CONNECTED:
-      draft.mongodbConnected = true;
-      break;
-    case WEB_SOCKET_DISCONNECTED:
-      draft.webSocketConnected = false;
-      break;
-    case WEB_SOCKET_CONNECTED:
-      draft.webSocketConnected = true;
-      break;
-    case GRAPH_QL_SERVER_DISCONNECTED:
-      draft.graphqlConnected = false;
-      break;
-    case GRAPH_QL_SERVER_CONNECTED:
-      draft.graphqlConnected = true;
-      break;
-    default:
-      break;
-  }
-});
+const reducer = (state = initialState, action) =>
+  produce(state, draft => {
+    switch (action.type) {
+      case WEB_SERVER_DISCONNECTED:
+        draft.webServerConnected = false;
+        break;
+      case WEB_SERVER_CONNECTED:
+        draft.webServerConnected = true;
+        break;
+      case MONGODB_DISCONNECTED:
+        draft.mongodbConnected = false;
+        break;
+      case MONGODB_CONNECTED:
+        draft.mongodbConnected = true;
+        break;
+      case WEB_SOCKET_DISCONNECTED:
+        draft.webSocketConnected = false;
+        break;
+      case WEB_SOCKET_CONNECTED:
+        draft.webSocketConnected = true;
+        break;
+      case GRAPH_QL_SERVER_DISCONNECTED:
+        draft.graphqlConnected = false;
+        break;
+      case GRAPH_QL_SERVER_CONNECTED:
+        draft.graphqlConnected = true;
+        break;
+      default:
+        break;
+    }
+  });
 
 export default reducer;
-export {
-  initialState
-}
+export { initialState };
