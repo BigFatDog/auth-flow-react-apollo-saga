@@ -1,47 +1,48 @@
 import { createSelector } from 'reselect';
+import { initialState } from './reducer';
 
-const selectAuth = state => state.get('auth');
+const selectAuth = state => state.auth || initialState;
 
 const makeSelectToken = () =>
   createSelector(
     selectAuth,
-    authState => authState.get('token')
+    authState => authState.token
   );
 
 const makeSelectRefreshToken = () =>
   createSelector(
     selectAuth,
-    authState => authState.get('refreshToken')
+    authState => authState.refreshToken
   );
 
 const makeSelectUserId = () =>
   createSelector(
     selectAuth,
-    authState => authState.get('userId')
+    authState => authState.userId
   );
 
 const makeSelectUserName = () =>
   createSelector(
     selectAuth,
-    authState => authState.get('userName')
+    authState => authState.userName
   );
 
 const makeSelectIsAuthenticated = () =>
   createSelector(
     selectAuth,
-    authState => authState.get('isAuthenticated')
+    authState => authState.isAuthenticated
   );
 
 const makeSelectIsAuthenticating = () =>
   createSelector(
     selectAuth,
-    authState => authState.get('isAuthenticating')
+    authState => authState.isAuthenticating
   );
 
 const makeSelectMessage = () =>
   createSelector(
     selectAuth,
-    authState => authState.get('statusText')
+    authState => authState.statusText
   );
 
 export {

@@ -12,7 +12,7 @@ import NotFoundPage from './containers/NotFoundPage';
 import Layout from './containers/Layout';
 import EmptyLayout from './containers/Layout/EmptyLayout';
 
-import RequireAuth from './core/auth/AuthComp';
+import SecuredRoute from './core/auth/SecuredRoute';
 
 import Login from './containers/Auth/Login';
 import SignUp from './containers/Auth/SignUp';
@@ -20,8 +20,10 @@ import SignUp from './containers/Auth/SignUp';
 import PostPage from './pages/posts';
 import WelcomePage from './pages/welcome';
 
-const MasterLayout = ({ component: Component, ...rest }) => {
-  return (
+const MasterLayout = ({ component: Component, secured = false, ...rest }) =>
+  secured === true ? (
+    <SecuredRoute {...rest} component={Component} layout={Layout} />
+  ) : (
     <Route
       {...rest}
       render={matchProps => (
@@ -31,7 +33,6 @@ const MasterLayout = ({ component: Component, ...rest }) => {
       )}
     />
   );
-};
 
 const EmptyLayoutRoute = ({ component: Component, ...rest }) => {
   return (
@@ -49,8 +50,8 @@ const EmptyLayoutRoute = ({ component: Component, ...rest }) => {
 export default function Routes() {
   return (
     <Switch>
-      <MasterLayout exact path="/" component={RequireAuth(WelcomePage)} />
-      <MasterLayout path="/post" component={RequireAuth(PostPage)} />
+      <MasterLayout exact path="/" component={WelcomePage} secured={true} />
+      <MasterLayout path="/post" component={PostPage} secured={true} />
       <EmptyLayoutRoute path="/login" component={Login} />
       <EmptyLayoutRoute path="/signup" component={SignUp} />
 

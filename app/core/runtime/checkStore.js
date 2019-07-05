@@ -1,6 +1,4 @@
-import conformsTo from 'lodash/conformsTo';
-import isFunction from 'lodash/isFunction';
-import isObject from 'lodash/isObject';
+import { conformsTo, isFunction, isObject } from 'lodash';
 import invariant from 'invariant';
 
 /**
@@ -18,6 +16,6 @@ export default function checkStore(store) {
   };
   invariant(
     conformsTo(store, shape),
-    '(client/utils...) injectors: Expected a valid redux store'
+    '(app/core/runtime...) injectors: Expected a valid redux store'
   );
 }
