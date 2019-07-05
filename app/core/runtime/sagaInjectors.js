@@ -1,8 +1,5 @@
-import isEmpty from 'lodash/isEmpty';
-import isFunction from 'lodash/isFunction';
-import isString from 'lodash/isString';
 import invariant from 'invariant';
-import conformsTo from 'lodash/conformsTo';
+import { isEmpty, isFunction, isString, conformsTo } from 'lodash';
 
 import checkStore from './checkStore';
 import { DAEMON, ONCE_TILL_UNMOUNT, RESTART_ON_REMOUNT } from './constants';
@@ -12,7 +9,7 @@ const allowedModes = [RESTART_ON_REMOUNT, DAEMON, ONCE_TILL_UNMOUNT];
 const checkKey = key =>
   invariant(
     isString(key) && !isEmpty(key),
-    '(core/runtime/utils...) injectSaga: Expected `key` to be a non empty string'
+    '(core/runtime...) injectSaga: Expected `key` to be a non empty string'
   );
 
 const checkDescriptor = descriptor => {
@@ -22,7 +19,7 @@ const checkDescriptor = descriptor => {
   };
   invariant(
     conformsTo(descriptor, shape),
-    '(core/runtime/utils...) injectSaga: Expected a valid saga descriptor'
+    '(core/runtime...) injectSaga: Expected a valid saga descriptor'
   );
 };
 
@@ -32,7 +29,7 @@ export function injectSagaFactory(store, isValid) {
 
     const newDescriptor = {
       ...descriptor,
-      mode: descriptor.mode || RESTART_ON_REMOUNT,
+      mode: descriptor.mode || DAEMON,
     };
     const { saga, mode } = newDescriptor;
 

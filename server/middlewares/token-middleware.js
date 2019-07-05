@@ -19,7 +19,8 @@ export default SECRET => async (req, res, next) => {
 
     next();
   } catch (err) {
-    const refreshToken = req.cookies['x-refresh-token'] || req.headers['refreshToken'];
+    const refreshToken =
+      req.cookies['x-refresh-token'] || req.headers['refreshToken'];
 
     if (!refreshToken) {
       res.status(401).json({

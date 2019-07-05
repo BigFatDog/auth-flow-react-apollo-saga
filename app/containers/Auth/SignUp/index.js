@@ -1,9 +1,8 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { injectIntl, intlShape, FormattedMessage } from 'react-intl';
 import { func } from 'prop-types';
 import { connect } from 'react-redux';
-import { push } from 'connected-react-router';
 import { Link } from 'react-router-dom';
 import { createStructuredSelector } from 'reselect';
 import { compose } from 'redux';
@@ -12,7 +11,8 @@ import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
 import trim from 'lodash/trim';
 
-import injectSaga from '../../../core/runtime/injectSaga';
+import { useInjectReducer } from '../../../core/runtime/injectReducer';
+import { useInjectSaga } from '../../../core/runtime/injectSaga';
 import saga from './saga';
 
 import { signUpRequest, signUpFailure } from '../../../core/auth/actions';
@@ -50,166 +50,134 @@ import getAuthError from '../get-auth-error';
 const isStringSafe = str =>
   !isNull(str) && !isUndefined(str) && !isEmpty(trim(str));
 
-class SignUp extends Component {
-  static propTypes = {
-    intl: intlShape.isRequired,
-    onSignUpRequest: func.isRequired,
-    onSignUpFailure: func.isRequired,
-    isAuthenticated: PropTypes.bool,
-    isAuthenticating: PropTypes.bool,
-    errorMsg: PropTypes.string,
-  };
+const SignUp = props => {
+  useInjectSaga({ key: 'signUp', saga });
+  const [username, setUserName] = useState('');
+  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('');
+  const [submitted, setSubmitted] = useState(false);
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      username: '',
-      password: '',
-      email: '',
-      submitted: false,
-    };
+  const {
+    intl,
+    isAuthenticated,
+    isAuthenticating,
+    errorMsg,
+    isWebServerConnected,
+  } = props;
 
-    this.changeUsername = e => this._changeUsername(e.target.value);
-    this.changePassword = e => this._changePassword(e.target.value);
-    this.changeEmail = e => this._changeEmail(e.target.value);
-    this.signUp = e => this._signUp(e);
-  }
+  const emailPlaceholder = intl.formatMessage({ id: messages.email.id });
+  const namePlaceholder = intl.formatMessage({ id: messages.username.id });
+  const passwordPlaceholder = intl.formatMessage({
+    id: messages.password.id,
+  });
 
-  _changeEmail(value) {
-    this.setState({
-      email: value,
-    });
-  }
-
-  _changeUsername(value) {
-    this.setState({
-      username: value,
-    });
-  }
-  _changePassword(value) {
-    this.setState({
-      password: value,
-    });
-  }
-
-  async _signUp() {
-    const { email, username, password } = this.state;
-
-    this.setState({
-      submitted: true,
-    });
+  const signUp = () => {
+    setSubmitted(true);
+    const { onSignUpFailure, onSignUpRequest, history } = props;
 
     if (
       !isStringSafe(email) ||
       !isStringSafe(username) ||
       !isStringSafe(password)
     ) {
-      this.props.onSignUpFailure({ errorMsg: ALL_ARE_REQUIRED });
+      onSignUpFailure({ errorMsg: ALL_ARE_REQUIRED });
       return;
     }
 
     if (!validateEmail(email)) {
-      this.props.onSignUpFailure({ errorMsg: EMAIL_IS_INVALID });
+      onSignUpFailure({ errorMsg: EMAIL_IS_INVALID });
       return;
     }
 
-    this.props.onSignUpRequest({
+    onSignUpRequest({
       email,
       username,
       password,
-      push: this.props.history.push,
+      push: history.push,
     });
-  }
+  };
 
-  render() {
-    const {
-      intl,
-      isAuthenticated,
-      isAuthenticating,
-      errorMsg,
-      isWebServerConnected,
-    } = this.props;
-    const { submitted } = this.state;
+  let Errors = null;
 
-    const emailPlaceholder = intl.formatMessage({ id: messages.email.id });
-    const namePlaceholder = intl.formatMessage({ id: messages.username.id });
-    const passwordPlaceholder = intl.formatMessage({
-      id: messages.password.id,
-    });
-
-    let Errors = null;
-
-    if (isAuthenticating === true) {
-      Errors = (
-        <ErrorBox>
-          <i className="fas fa-cog fa-spin error-icon" />{' '}
-          <FormattedMessage {...messages.authenticating} />
-        </ErrorBox>
-      );
-    } else if (isAuthenticated === false && submitted === true) {
-      Errors = (
-        <ErrorBox>{getAuthError(errorMsg, isWebServerConnected)}</ErrorBox>
-      );
-    }
-
-    return (
-      <CentralContainer>
-        <LoginBoxContainer>
-          <LoginBox>
-            <LoginPanel>
-              {Errors}
-              <form autoComplete={'off'}>
-                <InputTextWrapper>
-                  <i className="fas fa-at input-icon" />
-                  <input
-                    type="text"
-                    placeholder={emailPlaceholder}
-                    onChange={this.changeEmail}
-                    name="username"
-                    className="input-text username"
-                    required
-                  />
-                </InputTextWrapper>
-                <InputTextWrapper>
-                  <i className="fas fa-user input-icon" />
-                  <input
-                    type="text"
-                    placeholder={namePlaceholder}
-                    onChange={this.changeUsername}
-                    name="username"
-                    className="input-text username"
-                    required
-                  />
-                </InputTextWrapper>
-                <InputTextWrapper>
-                  <i className="fas fa-lock input-icon" />
-                  <input
-                    type="password"
-                    placeholder={passwordPlaceholder}
-                    onChange={this.changePassword}
-                    name="password"
-                    className="input-text password"
-                    required
-                  />
-                </InputTextWrapper>
-                <SubmitButton disabled={true} onClick={this.signUp}>
-                  <FormattedMessage {...messages.signUp} />
-                </SubmitButton>
-              </form>
-              <BottomPrompt>
-                <FormattedMessage {...messages.signUpHaveAccount} />
-                &nbsp;
-                <Link to={'/login'}>
-                  <FormattedMessage {...messages.signIn} />
-                </Link>
-              </BottomPrompt>
-            </LoginPanel>
-          </LoginBox>
-        </LoginBoxContainer>
-      </CentralContainer>
+  if (isAuthenticating === true) {
+    Errors = (
+      <ErrorBox>
+        <i className="fas fa-cog fa-spin error-icon" />{' '}
+        <FormattedMessage {...messages.authenticating} />
+      </ErrorBox>
+    );
+  } else if (isAuthenticated === false && submitted === true) {
+    Errors = (
+      <ErrorBox>{getAuthError(errorMsg, isWebServerConnected)}</ErrorBox>
     );
   }
-}
+
+  return (
+    <CentralContainer>
+      <LoginBoxContainer>
+        <LoginBox>
+          <LoginPanel>
+            {Errors}
+            <form autoComplete={'off'}>
+              <InputTextWrapper>
+                <i className="fas fa-at input-icon" />
+                <input
+                  type="text"
+                  placeholder={emailPlaceholder}
+                  onChange={e => setEmail(e.target.value)}
+                  name="username"
+                  className="input-text username"
+                  required
+                />
+              </InputTextWrapper>
+              <InputTextWrapper>
+                <i className="fas fa-user input-icon" />
+                <input
+                  type="text"
+                  placeholder={namePlaceholder}
+                  onChange={e => setUserName(e.target.value)}
+                  name="username"
+                  className="input-text username"
+                  required
+                />
+              </InputTextWrapper>
+              <InputTextWrapper>
+                <i className="fas fa-lock input-icon" />
+                <input
+                  type="password"
+                  placeholder={passwordPlaceholder}
+                  onChange={e => setPassword(e.target.value)}
+                  name="password"
+                  className="input-text password"
+                  required
+                />
+              </InputTextWrapper>
+              <SubmitButton disabled={true} onClick={() => signUp()}>
+                <FormattedMessage {...messages.signUp} />
+              </SubmitButton>
+            </form>
+            <BottomPrompt>
+              <FormattedMessage {...messages.signUpHaveAccount} />
+              &nbsp;
+              <Link to={'/login'}>
+                <FormattedMessage {...messages.signIn} />
+              </Link>
+            </BottomPrompt>
+          </LoginPanel>
+        </LoginBox>
+      </LoginBoxContainer>
+    </CentralContainer>
+  );
+};
+
+SignUp.propTypes = {
+  intl: intlShape.isRequired,
+  onSignUpRequest: func.isRequired,
+  onSignUpFailure: func.isRequired,
+  isAuthenticated: PropTypes.bool,
+  isAuthenticating: PropTypes.bool,
+  errorMsg: PropTypes.string,
+};
 
 const mapStateToProps = createStructuredSelector({
   isAuthenticated: makeSelectIsAuthenticated(),
@@ -230,9 +198,4 @@ const withConnect = connect(
   mapStateToProps,
   mapDispatchToProps
 );
-const withSaga = injectSaga({ key: 'signUp', saga });
-
-export default compose(
-  withConnect,
-  withSaga
-)(injectIntl(SignUp));
+export default compose(withConnect)(injectIntl(SignUp));

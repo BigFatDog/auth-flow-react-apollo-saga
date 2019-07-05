@@ -1,29 +1,30 @@
 import { createSelector } from 'reselect';
+import { initialState } from './reducers';
 
-const selectSystem = state => state.get('system');
+const selectSystem = state => state.system || initialState;
 
 const makeSelectWebServerConnected = () =>
   createSelector(
     selectSystem,
-    authState => authState.get('webServerConnected')
+    authState => authState.webServerConnected
   );
 
 const makeSelectWebSocketConnected = () =>
   createSelector(
     selectSystem,
-    authState => authState.get('webSocketConnected')
+    authState => authState.webSocketConnected
   );
 
 const makeSelectMongodbConnected = () =>
   createSelector(
     selectSystem,
-    authState => authState.get('mongodbConnected')
+    authState => authState.mongodbConnected
   );
 
 const makeSelectGraphqlConnected = () =>
   createSelector(
     selectSystem,
-    authState => authState.get('graphqlConnected')
+    authState => authState.graphqlConnected
   );
 
 export {

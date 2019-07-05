@@ -1,4 +1,4 @@
-import { fromJS } from 'immutable';
+import produce from 'immer';
 
 import {
   LOGIN_REQUEST,
@@ -13,7 +13,7 @@ import {
   LOGOUT,
 } from './constants';
 
-const initialState = fromJS({
+const initialState = {
   token: null,
   refreshToken: null,
   userId: null,
@@ -21,55 +21,59 @@ const initialState = fromJS({
   isAuthenticated: false,
   isAuthenticating: true,
   statusText: null,
-});
-
-const reducer = (state = initialState, action) => {
-  switch (action.type) {
-    case LOGIN_REQUEST:
-    case SIGN_UP_REQUEST:
-      return state
-        .set('isAuthenticating', true)
-        .set('isAuthenticated', false)
-        .set('statusText', null);
-    case VERIFY_TOKEN_REQUEST: // verify token doesn't change authenticated status
-      return state.set('isAuthenticating', true).set('statusText', null);
-    case LOGIN_SUCCESS:
-    case VERIFY_TOKEN_SUCCESS:
-    case SIGN_UP_SUCCESS:
-      return state
-        .set('isAuthenticating', false)
-        .set('isAuthenticated', true)
-        .set('statusText', null)
-        .set('token', action.payload.token)
-        .set('refreshToken', action.payload.refreshToken)
-        .set('userId', action.payload.userId)
-        .set('userName', action.payload.userName)
-        .set('statusText', null);
-    case LOGIN_FAILURE:
-    case VERIFY_TOKEN_FAILURE:
-    case SIGN_UP_FAILURE:
-      return state
-        .set('isAuthenticating', false)
-        .set('isAuthenticated', false)
-        .set('statusText', null)
-        .set('token', null)
-        .set('refreshToken', null)
-        .set('userId', null)
-        .set('userName', null)
-        .set('statusText', `${action.payload.errorMsg}`);
-    case LOGOUT:
-      return state
-        .set('isAuthenticating', false)
-        .set('isAuthenticated', false)
-        .set('statusText', null)
-        .set('token', null)
-        .set('refreshToken', null)
-        .set('userId', null)
-        .set('userName', null)
-        .set('statusText', null);
-    default:
-      return state;
-  }
 };
 
+const reducer = (state = initialState, action) =>
+  produce(state, draft => {
+    switch (action.type) {
+      case LOGIN_REQUEST:
+      case SIGN_UP_REQUEST:
+        draft.isAuthenticating = true;
+        draft.isAuthenticated = false;
+        draft.statusText = null;
+        break;
+      case VERIFY_TOKEN_REQUEST: // verify token doesn't change authenticated status
+        draft.isAuthenticating = true;
+        draft.statusText = null;
+        break;
+      case LOGIN_SUCCESS:
+      case VERIFY_TOKEN_SUCCESS:
+      case SIGN_UP_SUCCESS:
+        draft.isAuthenticating = false;
+        draft.isAuthenticated = true;
+        draft.statusText = null;
+        draft.token = action.payload.token;
+        draft.refreshToken = action.payload.refreshToken;
+        draft.userId = action.payload.userId;
+        draft.userName = action.payload.userName;
+        draft.statusText = null;
+        break;
+      case LOGIN_FAILURE:
+      case VERIFY_TOKEN_FAILURE:
+      case SIGN_UP_FAILURE:
+        draft.isAuthenticating = false;
+        draft.isAuthenticated = false;
+        draft.statusText = null;
+        draft.token = null;
+        draft.refreshToken = null;
+        draft.userId = null;
+        draft.userName = null;
+        draft.statusText = `${action.payload.errorMsg}`;
+        break;
+      case LOGOUT:
+        draft.isAuthenticating = false;
+        draft.isAuthenticated = false;
+        draft.statusText = null;
+        draft.token = null;
+        draft.refreshToken = null;
+        draft.userId = null;
+        draft.userName = null;
+        draft.statusText = null;
+        break;
+      default:
+        break;
+    }
+  });
+
 export default reducer;
+export { initialState };
