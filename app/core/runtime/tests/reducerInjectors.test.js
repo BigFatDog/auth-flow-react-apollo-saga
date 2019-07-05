@@ -3,7 +3,7 @@
  */
 
 import { memoryHistory } from 'react-router-dom';
-import { fromJS } from 'immutable';
+import produce from 'immer';
 import identity from 'lodash/identity';
 
 import configureStore from '../../configureStore';
@@ -14,14 +14,15 @@ import getInjectors, { injectReducerFactory } from '../reducerInjectors';
 
 const initialState = fromJS({ reduced: 'soon' });
 
-const reducer = (state = initialState, action) => {
+const reducer = (state = initialState, action) => produce(state, draft => {
   switch (action.type) {
     case 'TEST':
-      return state.set('reduced', action.payload);
+      draft.reduced = action.payload;
+      break;
     default:
-      return state;
+      break;
   }
-};
+});
 
 describe('reducer injectors', () => {
   let store;

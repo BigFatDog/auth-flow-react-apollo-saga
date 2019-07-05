@@ -1,8 +1,8 @@
 /**
  * Combine all reducers in this file and export the combined reducers.
  */
-import { combineReducers } from 'redux-immutable';
-import { connectRouter } from 'connected-react-router/immutable';
+import { combineReducers } from 'redux';
+import { connectRouter } from 'connected-react-router';
 
 import SystemReducer from './core/system/reducers';
 import AuthReducer from './core/auth/reducer';

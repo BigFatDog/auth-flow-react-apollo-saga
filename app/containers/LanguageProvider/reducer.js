@@ -3,22 +3,25 @@
  * LanguageProvider reducer
  *
  */
-import { fromJS } from 'immutable';
-
 import { CHANGE_LOCALE } from './constants';
 import { DEFAULT_LOCALE } from '../../i18n';
+import produce from 'immer';
 
-const initialState = fromJS({
+const initialState = {
   locale: DEFAULT_LOCALE,
-});
+};
 
-function languageProviderReducer(state = initialState, action) {
+const languageProviderReducer = (state = initialState, action) => produce(state, draft => {
   switch (action.type) {
     case CHANGE_LOCALE:
-      return state.set('locale', action.locale);
+      draft.locale = action.locale;
+      break;
     default:
-      return state;
+      break;
   }
-}
+});
 
 export default languageProviderReducer;
+export {
+  initialState
+}

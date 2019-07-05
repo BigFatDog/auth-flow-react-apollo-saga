@@ -1,4 +1,4 @@
-import { fromJS } from 'immutable';
+import produce from 'immer';
 
 import {
   WEB_SERVER_DISCONNECTED,
@@ -11,34 +11,45 @@ import {
   GRAPH_QL_SERVER_CONNECTED,
 } from './constants';
 
-const initialState = fromJS({
+const initialState = {
   webServerConnected: true,
   webSocketConnected: true,
   mongodbConnected: true,
   graphqlConnected: true,
-});
-
-const reducer = (state = initialState, action) => {
-  switch (action.type) {
-    case WEB_SERVER_DISCONNECTED:
-      return state.set('webServerConnected', false);
-    case WEB_SERVER_CONNECTED:
-      return state.set('webServerConnected', true);
-    case MONGODB_DISCONNECTED:
-      return state.set('mongodbConnected', false);
-    case MONGODB_CONNECTED:
-      return state.set('mongodbConnected', true);
-    case WEB_SOCKET_DISCONNECTED:
-      return state.set('webSocketConnected', false);
-    case WEB_SOCKET_CONNECTED:
-      return state.set('webSocketConnected', true);
-    case GRAPH_QL_SERVER_DISCONNECTED:
-      return state.set('graphqlConnected', false);
-    case GRAPH_QL_SERVER_CONNECTED:
-      return state.set('graphqlConnected', true);
-    default:
-      return state;
-  }
 };
 
+const reducer = (state = initialState, action) => produce(state, draft => {
+  switch (action.type) {
+    case WEB_SERVER_DISCONNECTED:
+      draft.webServerConnected = false;
+      break;
+    case WEB_SERVER_CONNECTED:
+      draft.webServerConnected = true;
+      break;
+    case MONGODB_DISCONNECTED:
+      draft.mongodbConnected = false;
+      break;
+    case MONGODB_CONNECTED:
+      draft.mongodbConnected = true;
+      break;
+    case WEB_SOCKET_DISCONNECTED:
+      draft.webSocketConnected = false;
+      break;
+    case WEB_SOCKET_CONNECTED:
+      draft.webSocketConnected = true;
+      break;
+    case GRAPH_QL_SERVER_DISCONNECTED:
+      draft.graphqlConnected = false;
+      break;
+    case GRAPH_QL_SERVER_CONNECTED:
+      draft.graphqlConnected = true;
+      break;
+    default:
+      break;
+  }
+});
+
 export default reducer;
+export {
+  initialState
+}
