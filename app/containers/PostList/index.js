@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { Query } from 'react-apollo';
 import gql from 'graphql-tag';
@@ -27,4 +27,4 @@ const PostList = props => (
   </Query>
 );
 
-export default PostList;
+export default memo(PostList);

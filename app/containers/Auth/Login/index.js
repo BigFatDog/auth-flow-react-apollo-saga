@@ -72,8 +72,6 @@ const Login = props => {
       return;
     }
 
-    console.log('---');
-
     onLoginRequest({
       username,
       password,
