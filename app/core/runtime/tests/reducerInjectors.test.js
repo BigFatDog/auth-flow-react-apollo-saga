@@ -1,9 +1,5 @@
-/**
- * Test injectors
- */
-
-import { memoryHistory } from 'react-router-dom';
 import produce from 'immer';
+import { memoryHistory } from 'react-router-dom';
 import identity from 'lodash/identity';
 
 import configureStore from '../../configureStore';
@@ -12,15 +8,14 @@ import getInjectors, { injectReducerFactory } from '../reducerInjectors';
 
 // Fixtures
 
-const initialState = fromJS({ reduced: 'soon' });
+const initialState = { reduced: 'soon' };
 
+/* eslint-disable default-case, no-param-reassign */
 const reducer = (state = initialState, action) =>
   produce(state, draft => {
     switch (action.type) {
       case 'TEST':
         draft.reduced = action.payload;
-        break;
-      default:
         break;
     }
   });
@@ -76,10 +71,10 @@ describe('reducer injectors', () => {
     it('given a store, it should provide a function to inject a reducer', () => {
       injectReducer('test', reducer);
 
-      const actual = store.getState().get('test');
+      const actual = store.getState().test;
       const expected = initialState;
 
-      expect(actual.toJS()).toEqual(expected.toJS());
+      expect(actual).toEqual(expected);
     });
 
     it('should not assign reducer if already existing', () => {

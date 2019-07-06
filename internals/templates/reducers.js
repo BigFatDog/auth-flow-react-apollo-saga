@@ -2,10 +2,12 @@
  * Combine all reducers in this file and export the combined reducers.
  */
 
-import { combineReducers } from 'redux-immutable';
-import { connectRouter } from 'connected-react-router/immutable';
-import languageProviderReducer from '../containers/LanguageProvider/reducer';
+import { connectRouter } from 'connected-react-router';
 import history from "../../app/history";
+import {combineReducers} from "redux";
+import AuthReducer from "../../app/core/auth/reducer";
+import SystemReducer from "../../app/core/system/reducers";
+import languageReducer from "../../app/containers/LanguageProvider/reducer";
 
 /*
  * routeReducer
@@ -19,14 +21,11 @@ import history from "../../app/history";
  * Creates the main reducer with the dynamically injected ones
  */
 export default function createReducer(injectedReducers) {
-  const rootReducer = combineReducers({
-    route: routeReducer,
-    language: languageProviderReducer,
+  return combineReducers({
+    auth: AuthReducer,
+    system: SystemReducer,
+    language: languageReducer,
+    router: connectRouter(history),
     ...injectedReducers,
   });
-
-
-  // Wrap the root reducer and return a new root reducer with router state
-  const mergeWithRouterState = connectRouter(history);
-  return mergeWithRouterState(rootReducer);
 }

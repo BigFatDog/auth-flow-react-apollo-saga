@@ -1,55 +1,96 @@
-/**
- * Test injectors
- */
-
+import produce from 'immer';
 import { memoryHistory } from 'react-router-dom';
-import { shallow } from 'enzyme';
-import React from 'react';
 import identity from 'lodash/identity';
 
 import configureStore from '../../configureStore';
-import injectReducer from '../injectReducer';
-import * as reducerInjectors from '../reducerInjectors';
+
+import getInjectors, { injectReducerFactory } from '../reducerInjectors';
 
 // Fixtures
-const Component = () => null;
 
-const reducer = identity;
+const initialState = { reduced: 'soon' };
 
-describe('injectReducer decorator', () => {
+/* eslint-disable default-case, no-param-reassign */
+const reducer = (state = initialState, action) =>
+  produce(state, draft => {
+    switch (action.type) {
+      case 'TEST':
+        draft.reduced = action.payload;
+        break;
+    }
+  });
+
+describe('reducer injectors', () => {
   let store;
-  let injectors;
-  let ComponentWithReducer;
+  let injectReducer;
 
-  beforeAll(() => {
-    reducerInjectors.default = jest.fn().mockImplementation(() => injectors);
+  describe('getInjectors', () => {
+    beforeEach(() => {
+      store = configureStore({}, memoryHistory);
+    });
+
+    it('should return injectors', () => {
+      expect(getInjectors(store)).toEqual(
+        expect.objectContaining({
+          injectReducer: expect.any(Function),
+        }),
+      );
+    });
+
+    it('should throw if passed invalid store shape', () => {
+      Reflect.deleteProperty(store, 'dispatch');
+
+      expect(() => getInjectors(store)).toThrow();
+    });
   });
 
-  beforeEach(() => {
-    store = configureStore({}, memoryHistory);
-    injectors = {
-      injectReducer: jest.fn(),
-    };
-    ComponentWithReducer = injectReducer({ key: 'test', reducer })(Component);
-    reducerInjectors.default.mockClear();
-  });
+  describe('injectReducer helper', () => {
+    beforeEach(() => {
+      store = configureStore({}, memoryHistory);
+      injectReducer = injectReducerFactory(store, true);
+    });
 
-  it('should inject a given reducer', () => {
-    shallow(<ComponentWithReducer />, { context: { store } });
+    it('should check a store if the second argument is falsy', () => {
+      const inject = injectReducerFactory({});
 
-    expect(injectors.injectReducer).toHaveBeenCalledTimes(1);
-    expect(injectors.injectReducer).toHaveBeenCalledWith('test', reducer);
-  });
+      expect(() => inject('test', reducer)).toThrow();
+    });
 
-  it('should set a correct display name', () => {
-    expect(ComponentWithReducer.displayName).toBe('withReducer(Component)');
-    expect(injectReducer({ key: 'test', reducer })(() => null).displayName).toBe('withReducer(Component)');
-  });
+    it('it should not check a store if the second argument is true', () => {
+      Reflect.deleteProperty(store, 'dispatch');
 
-  it('should propagate props', () => {
-    const props = { testProp: 'test' };
-    const renderedComponent = shallow(<ComponentWithReducer {...props} />, { context: { store } });
+      expect(() => injectReducer('test', reducer)).not.toThrow();
+    });
 
-    expect(renderedComponent.prop('testProp')).toBe('test');
+    it("should validate a reducer and reducer's key", () => {
+      expect(() => injectReducer('', reducer)).toThrow();
+      expect(() => injectReducer(1, reducer)).toThrow();
+      expect(() => injectReducer(1, 1)).toThrow();
+    });
+
+    it('given a store, it should provide a function to inject a reducer', () => {
+      injectReducer('test', reducer);
+
+      const actual = store.getState().test;
+      const expected = initialState;
+
+      expect(actual).toEqual(expected);
+    });
+
+    it('should not assign reducer if already existing', () => {
+      store.replaceReducer = jest.fn();
+      injectReducer('test', reducer);
+      injectReducer('test', reducer);
+
+      expect(store.replaceReducer).toHaveBeenCalledTimes(1);
+    });
+
+    it('should assign reducer if different implementation for hot reloading', () => {
+      store.replaceReducer = jest.fn();
+      injectReducer('test', reducer);
+      injectReducer('test', identity);
+
+      expect(store.replaceReducer).toHaveBeenCalledTimes(2);
+    });
   });
 });

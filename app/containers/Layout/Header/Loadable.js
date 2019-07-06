@@ -3,10 +3,7 @@
  * Asynchronously loads the component for Layout
  *
  */
+import React from 'react';
+import loadable from '../../../core/runtime/loadable';
 
-import Loadable from 'react-loadable';
-
-export default Loadable({
-  loader: () => import('./index'),
-  loading: () => null,
-});
+export default loadable(() => import('./index'));

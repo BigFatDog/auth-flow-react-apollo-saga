@@ -6,7 +6,7 @@
  * IntlProvider component and i18n messages (loaded from `app/translations`)
  */
 
-import React, { PureComponent } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
@@ -14,20 +14,15 @@ import { IntlProvider } from 'react-intl';
 
 import { makeSelectLocale } from './selectors';
 
-export class LanguageProvider extends PureComponent {
-  // eslint-disable-line react/prefer-stateless-function
-  render() {
-    return (
-      <IntlProvider
-        locale={this.props.locale}
-        key={this.props.locale}
-        messages={this.props.messages[this.props.locale]}
-      >
-        {React.Children.only(this.props.children)}
-      </IntlProvider>
-    );
-  }
-}
+const LanguageProvider = props => (
+  <IntlProvider
+    locale={props.locale}
+    key={props.locale}
+    messages={props.messages[props.locale]}
+  >
+    {React.Children.only(props.children)}
+  </IntlProvider>
+);
 
 LanguageProvider.propTypes = {
   locale: PropTypes.string,
@@ -43,3 +38,4 @@ const mapStateToProps = createSelector(
 );
 
 export default connect(mapStateToProps)(LanguageProvider);
+export { LanguageProvider };

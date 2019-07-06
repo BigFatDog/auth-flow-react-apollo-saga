@@ -1,7 +1,4 @@
-/**
- * Test the request function
- */
-
+import 'whatwg-fetch';
 import request from '../../http/request';
 
 describe('request', () => {
