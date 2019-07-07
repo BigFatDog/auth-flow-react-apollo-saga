@@ -1,10 +1,6 @@
 import React, { useEffect } from 'react';
 import { webSocket } from 'rxjs/webSocket';
-import {
-  filter,
-  sampleTime,
-  scan,
-} from 'rxjs/operators';
+import { filter, sampleTime, scan } from 'rxjs/operators';
 import { select } from 'd3-selection';
 import { scaleTime, scaleLinear } from 'd3-scale';
 import { timeFormat } from 'd3-time-format';
@@ -13,19 +9,19 @@ import { line, curveLinear } from 'd3-shape';
 import { extent, min, max } from 'd3-array';
 import { easeLinear } from 'd3-ease';
 
+const width = 960;
+const height = 600;
+const margins = {
+  top: 20,
+  bottom: 50,
+  left: 70,
+  right: 20,
+};
+const localTimeFormat = timeFormat('%X');
+
 const LineChart = props => {
   useEffect(() => {
     const updatesOverTime = [];
-
-    const width = 960;
-    const height = 600;
-    const margins = {
-      top: 20,
-      bottom: 50,
-      left: 70,
-      right: 20,
-    };
-    const localTimeFormat = timeFormat('%X');
 
     const svg = select('svg')
       .attr('width', width)
@@ -52,11 +48,11 @@ const LineChart = props => {
       .call(xAxis);
 
     // Add a label to the middle of the x axis
-    const xAxisWidth = (width - margins.right - margins.left) / 2;
+    const xAxisMiddle = (width - margins.right - margins.left) / 2;
 
     svg
       .append('text')
-      .attr('x', margins.left + xAxisWidth)
+      .attr('x', margins.left + xAxisMiddle)
       .attr('y', height - margins.bottom)
       .attr('dy', '3em')
       .style('text-anchor', 'middle')
@@ -69,12 +65,12 @@ const LineChart = props => {
       .call(yAxis);
 
     // Add a label to the middle of the y axis
-    const yAxisHeight = (height - margins.bottom - margins.top) / 2;
+    const yAxisMiddle = (height - margins.bottom - margins.top) / 2;
     svg
       .append('text')
       .attr('transform', 'rotate(-90)')
       .attr('y', margins.left + 20)
-      .attr('x', -(margins.top + yAxisHeight))
+      .attr('x', -(margins.top + yAxisMiddle))
       .attr('dy', '-3.5em')
       .style('text-anchor', 'middle')
       .text('Updates per second');
@@ -99,7 +95,7 @@ const LineChart = props => {
       .append('g')
       .attr('clip-path', 'url(#clip)')
       .append('path')
-      .attr('stroke', 'blue')
+      .attr('stroke', '#0074D9')
       .attr('fill', 'none');
 
     // Add a text element below the chart, which will display the subject of new edits
@@ -216,7 +212,9 @@ const LineChart = props => {
     const updateStream = webSocket('ws://wiki-update-sockets.herokuapp.com/');
     // Filter the update stream for newuser events
     const newUserStream = updateStream.pipe(filter(d => d.type === 'newuser'));
-    newUserStream.subscribe(() => updateNewUser(['New user at: ' + localTimeFormat(new Date())]));
+    newUserStream.subscribe(() =>
+      updateNewUser(['New user at: ' + localTimeFormat(new Date())])
+    );
 
     // Filter the update stream for unspecified events, which we're taking to mean
     // edits in this case
