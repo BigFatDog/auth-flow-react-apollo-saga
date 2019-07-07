@@ -1,15 +1,10 @@
 import React, { useEffect } from 'react';
-import { fromEvent, defer } from 'rxjs';
+import { webSocket } from 'rxjs/webSocket';
 import {
-  delay,
-  delayWhen,
-  takeUntil,
-  map,
   filter,
   sampleTime,
   scan,
 } from 'rxjs/operators';
-import { webSocket } from 'rxjs/webSocket';
 import * as d3 from 'd3';
 
 const LineChart = props => {
@@ -50,7 +45,7 @@ const LineChart = props => {
       .tickSize(5);
     // .tickSubdivide(true);
 
-    const xAxisElement = svg
+    svg
       .append('g')
       .attr('class', 'x axis')
       .attr('transform', 'translate(0,' + (height - margins.bottom) + ')')
@@ -58,15 +53,16 @@ const LineChart = props => {
 
     // Add a label to the middle of the x axis
     const xAxisWidth = (width - margins.right - margins.left) / 2;
-    xAxisElement
+
+    svg
       .append('text')
       .attr('x', margins.left + xAxisWidth)
-      .attr('y', 0)
+      .attr('y', height - margins.bottom)
       .attr('dy', '3em')
       .style('text-anchor', 'middle')
       .text('Time');
 
-    const yAxisElement = svg
+    svg
       .append('g')
       .attr('class', 'y axis')
       .attr('transform', 'translate(' + margins.left + ',0)')
@@ -74,10 +70,10 @@ const LineChart = props => {
 
     // Add a label to the middle of the y axis
     const yAxisHeight = (height - margins.bottom - margins.top) / 2;
-    yAxisElement
+    svg
       .append('text')
       .attr('transform', 'rotate(-90)')
-      .attr('y', 0)
+      .attr('y', margins.left + 20)
       .attr('x', -(margins.top + yAxisHeight))
       .attr('dy', '-3.5em')
       .style('text-anchor', 'middle')
