@@ -3,22 +3,19 @@ import { fromEvent, defer } from 'rxjs';
 import { delay, delayWhen, takeUntil } from 'rxjs/operators';
 import { webSocket } from 'rxjs/webSocket';
 import * as d3 from 'd3';
-import { FormattedMessage } from 'react-intl';
-import { Query } from 'react-apollo';
-import gql from 'graphql-tag';
 
 const LineChart = props => {
   useEffect(() => {
     const updatesOverTime = [];
 
-    const width = 960,
-      height = 600,
-      margins = {
-        top: 20,
-        bottom: 50,
-        left: 70,
-        right: 20,
-      };
+    const width = 960;
+    const height = 600;
+    const margins = {
+      top: 20,
+      bottom: 50,
+      left: 70,
+      right: 20,
+    };
 
     const svg = d3
       .select('svg')
@@ -108,7 +105,7 @@ const LineChart = props => {
       .attr('class', 'edit-text')
       .attr(
         'transform',
-        'translate(' + margins.left + ',' + (height + 20) + ')'
+        'translate(' + margins.left + ',' + (height + 20) + ')',
       )
       .attr('width', width - margins.left);
 
@@ -125,7 +122,7 @@ const LineChart = props => {
           (width - margins.right - newUserTextWidth) +
           ',' +
           (height + 20) +
-          ')'
+          ')',
       )
       .attr('width', newUserTextWidth);
 
@@ -218,18 +215,14 @@ const LineChart = props => {
     socket$.subscribe(
       msg => console.log('message received: ' + msg),
       err => console.log(err),
-      () => console.log('complete'));
+      () => console.log('complete'),
+    );
 
-    const updateStream = messageStream.map(event => {
-      const dataString = event.data;
-      return JSON.parse(dataString);
-    });
+    const messageStream = socket$.asObservable();
+    const updateStream = messageStream.map(event => JSON.parse(event.data));
 
     // Filter the update stream for newuser events
-    const newUserStream = updateStream.filter(update => ({
-      ...update,
-      type: 'newuser',
-    }));
+    const newUserStream = updateStream.filter(d => d.type === 'newuser');
     newUserStream.subscribe(() => {
       const format = d3.timeFormat('%X');
       updateNewUser(['New user at: ' + format(new Date())]);
@@ -237,11 +230,8 @@ const LineChart = props => {
 
     // Filter the update stream for unspecified events, which we're taking to mean
     // edits in this case
-    const editStream = updateStream.filter(update => ({
-      ...update,
-      type: 'unspecified',
-    }));
-    editStream.subscribe(function(results) {
+    const editStream = updateStream.filter(d => d.type === 'unspecified');
+    editStream.subscribe(results => {
       updateEditText(['Last edit: ' + results.content]);
     });
 
@@ -264,6 +254,7 @@ const LineChart = props => {
       update(updatesOverTime);
     });
   }, []);
+
   return <svg />;
 };
 
