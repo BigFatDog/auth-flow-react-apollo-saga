@@ -218,22 +218,11 @@ const LineChart = props => {
         .text(d => d);
     };
 
-    const socket$ = webSocket('ws://wiki-update-sockets.herokuapp.com/');
-    //receive messages
-    // socket$.subscribe(
-    //   msg => console.log('message received: ' + msg),
-    //   err => console.log(err),
-    //   () => console.log('complete'),
-    // );
-
-    const updateStream = socket$.pipe(map(event => event));
+    const updateStream = webSocket('ws://wiki-update-sockets.herokuapp.com/');
     // Filter the update stream for newuser events
     const newUserStream = updateStream.pipe(filter(d => d.type === 'newuser'));
-
-    newUserStream.subscribe(() => {
-      const format = d3.timeFormat('%X');
-      updateNewUser(['New user at: ' + format(new Date())]);
-    });
+    const localeTimeFormat = d3.timeFormat('%X');
+    newUserStream.subscribe(() => updateNewUser(['New user at: ' + localeTimeFormat(new Date())]));
 
     // Filter the update stream for unspecified events, which we're taking to mean
     // edits in this case
