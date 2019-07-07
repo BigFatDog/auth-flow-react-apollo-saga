@@ -5,7 +5,13 @@ import {
   sampleTime,
   scan,
 } from 'rxjs/operators';
-import * as d3 from 'd3';
+import { select } from 'd3-selection';
+import { scaleTime, scaleLinear } from 'd3-scale';
+import { timeFormat } from 'd3-time-format';
+import { axisBottom, axisLeft } from 'd3-axis';
+import { line, curveLinear } from 'd3-shape';
+import { extent, min, max } from 'd3-array';
+import { easeLinear } from 'd3-ease';
 
 const LineChart = props => {
   useEffect(() => {
@@ -19,31 +25,25 @@ const LineChart = props => {
       left: 70,
       right: 20,
     };
+    const localTimeFormat = timeFormat('%X');
 
-    const svg = d3
-      .select('svg')
+    const svg = select('svg')
       .attr('width', width)
       .attr('height', height + 200);
 
-    const xRange = d3
-      .scaleTime()
+    const xRange = scaleTime()
       .range([margins.left, width - margins.right])
       .domain([new Date(), new Date()]);
-    const yRange = d3
-      .scaleLinear()
+    const yRange = scaleLinear()
       .range([height - margins.bottom, margins.top])
       .domain([0, 0]);
-    const xAxis = d3
-      .axisBottom()
+    const xAxis = axisBottom()
       .scale(xRange)
       .tickSize(5)
-      // .tickSubdivide(true)
-      .tickFormat(d3.timeFormat('%X'));
-    const yAxis = d3
-      .axisLeft()
+      .tickFormat(localTimeFormat);
+    const yAxis = axisLeft()
       .scale(yRange)
       .tickSize(5);
-    // .tickSubdivide(true);
 
     svg
       .append('g')
@@ -80,11 +80,10 @@ const LineChart = props => {
       .text('Updates per second');
 
     // Define our line series
-    const lineFunc = d3
-      .line()
+    const lineFunc = line()
       .x(d => xRange(d.x))
       .y(d => yRange(d.y))
-      .curve(d3.curveLinear);
+      .curve(curveLinear);
 
     svg
       .append('defs')
@@ -96,7 +95,7 @@ const LineChart = props => {
       .attr('width', width)
       .attr('height', height);
 
-    const line = svg
+    const lineShape = svg
       .append('g')
       .attr('clip-path', 'url(#clip)')
       .append('path')
@@ -133,25 +132,25 @@ const LineChart = props => {
     const samplingTime = 2000;
     const maxNumberOfDataPoints = 20;
 
-    function update(updates) {
+    const update = updates => {
       // Update the ranges of the chart to reflect the new data
       if (updates.length > 0) {
-        xRange.domain(d3.extent(updates, d => d.x));
-        yRange.domain([d3.min(updates, d => d.y), d3.max(updates, d => d.y)]);
+        xRange.domain(extent(updates, d => d.x));
+        yRange.domain([min(updates, d => d.y), max(updates, d => d.y)]);
       }
 
       // Until we have filled up our data window, we just keep adding data
       // points to the end of the chart.
       if (updates.length < maxNumberOfDataPoints) {
-        line
+        lineShape
           .transition()
-          .ease(d3.easeLinear)
+          .ease(easeLinear)
           .attr('d', lineFunc(updates));
 
         svg
           .selectAll('g.x.axis')
           .transition()
-          .ease(d3.easeLinear)
+          .ease(easeLinear)
           .call(xAxis);
       }
       // Once we have filled up the window, we then remove points from the
@@ -165,19 +164,19 @@ const LineChart = props => {
         // Transform our line series immediately, then translate it from
         // right to left. This gives the effect of our chart scrolling
         // forwards in time
-        line
+        lineShape
           .attr('d', lineFunc(updates))
           .attr('transform', null)
           .transition()
           .duration(samplingTime - 20)
-          .ease(d3.easeLinear)
+          .ease(easeLinear)
           .attr('transform', 'translate(' + xTranslation + ', 0)');
 
         svg
           .selectAll('g.x.axis')
           .transition()
           .duration(samplingTime - 20)
-          .ease(d3.easeLinear)
+          .ease(easeLinear)
           .call(xAxis);
       }
 
@@ -185,7 +184,7 @@ const LineChart = props => {
         .selectAll('g.y.axis')
         .transition()
         .call(yAxis);
-    }
+    };
 
     const textUpdateTransitionDuration = 550;
     const updateNewUser = newUser => {
@@ -201,7 +200,7 @@ const LineChart = props => {
         .text(d => d);
     };
 
-    const updateEditText = function(latestEdit) {
+    const updateEditText = latestEdit => {
       const text = svg.selectAll('text.edit-text').data(latestEdit);
 
       text
@@ -217,8 +216,7 @@ const LineChart = props => {
     const updateStream = webSocket('ws://wiki-update-sockets.herokuapp.com/');
     // Filter the update stream for newuser events
     const newUserStream = updateStream.pipe(filter(d => d.type === 'newuser'));
-    const localeTimeFormat = d3.timeFormat('%X');
-    newUserStream.subscribe(() => updateNewUser(['New user at: ' + localeTimeFormat(new Date())]));
+    newUserStream.subscribe(() => updateNewUser(['New user at: ' + localTimeFormat(new Date())]));
 
     // Filter the update stream for unspecified events, which we're taking to mean
     // edits in this case
