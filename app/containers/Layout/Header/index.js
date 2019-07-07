@@ -28,6 +28,9 @@ const Header = props => {
         <Link to="/post" className="nav-link">
           Post
         </Link>
+        <Link to="/realtime" className="nav-link">
+          Realtime
+        </Link>
       </NavHeader>
       <NavHeader>
         <a className="nav-link" />
