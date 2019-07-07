@@ -1,6 +1,14 @@
 import React, { useEffect } from 'react';
 import { fromEvent, defer } from 'rxjs';
-import { delay, delayWhen, takeUntil, map, filter, sampleTime, scan } from 'rxjs/operators';
+import {
+  delay,
+  delayWhen,
+  takeUntil,
+  map,
+  filter,
+  sampleTime,
+  scan,
+} from 'rxjs/operators';
 import { webSocket } from 'rxjs/webSocket';
 import * as d3 from 'd3';
 
@@ -105,7 +113,7 @@ const LineChart = props => {
       .attr('class', 'edit-text')
       .attr(
         'transform',
-        'translate(' + margins.left + ',' + (height + 20) + ')',
+        'translate(' + margins.left + ',' + (height + 20) + ')'
       )
       .attr('width', width - margins.left);
 
@@ -122,7 +130,7 @@ const LineChart = props => {
           (width - margins.right - newUserTextWidth) +
           ',' +
           (height + 20) +
-          ')',
+          ')'
       )
       .attr('width', newUserTextWidth);
 
