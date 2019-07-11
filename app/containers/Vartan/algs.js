@@ -51,10 +51,12 @@ function processImageData(compressed, width, height) {
 }
 
 function loadData(width, height) {
-  const p1 = csv('./sampled_cities_data.csv')
-    .then(citiesData => citiesData.map(d => ({ continent: d.continent, lat: +d.lat, lng: +d.lng })))
-  const p2 = json('./img.json')
-    .then(imgData => processImageData(imgData, width, height));
+  const p1 = csv('./sampled_cities_data.csv').then(citiesData =>
+    citiesData.map(d => ({ continent: d.continent, lat: +d.lat, lng: +d.lng }))
+  );
+  const p2 = json('./img.json').then(imgData =>
+    processImageData(imgData, width, height)
+  );
   return Promise.all([p1, p2]);
 }
 

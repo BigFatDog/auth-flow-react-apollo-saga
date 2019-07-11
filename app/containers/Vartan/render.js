@@ -1,5 +1,3 @@
-const width = window.innerWidth;
-const height = window.innerHeight;
 import * as d3 from 'd3';
 import {
   phyllotaxisLayout,
@@ -10,10 +8,12 @@ import {
   citiesLayout,
 } from './algs';
 
+const width = window.innerWidth;
+const height = window.innerHeight;
+
 const render = (regl, citiesData, imgData) => {
   const numPoints = 100000;
   const pointWidth = 4;
-  const pointMargin = 1;
   const duration = 1500;
   const delayByIndex = 500 / numPoints;
   const maxDuration = duration + delayByIndex * numPoints; // include max delay in here
