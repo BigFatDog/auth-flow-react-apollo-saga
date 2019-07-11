@@ -53,6 +53,7 @@ app.post('/login', login(setting.SECRET));
 app.post('/verifyToken', verifyToken(setting.SECRET));
 app.post('/signup', register(setting.SECRET));
 app.post('/logout', logout);
+app.use('/', express.static('public', { etag: false }));
 
 // get the intended host and port number, use localhost and port 3000 if not provided
 const customHost = argv.host || process.env.HOST;

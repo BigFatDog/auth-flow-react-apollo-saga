@@ -31,6 +31,9 @@ const Header = props => {
         <Link to="/realtime" className="nav-link">
           Realtime
         </Link>
+        <Link to="/gl" className="nav-link">
+          BigData
+        </Link>
       </NavHeader>
       <NavHeader>
         <a className="nav-link" />
