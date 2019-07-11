@@ -1,11 +1,20 @@
-import * as d3 from 'd3';
-import { queue } from 'd3-queue';
-import { csvParse } from 'd3-dsv';
 import { csv, json } from 'd3-fetch';
+import {
+  scaleLinear,
+  scaleSequential,
+  scaleOrdinal,
+  scaleQuantize,
+} from 'd3-scale';
+import { hsl, rgb } from 'd3-color';
+import { extent, range } from 'd3-array';
+import { interpolateCool } from 'd3-scale-chromatic';
+import { geoMercator } from 'd3-geo';
+import { randomNormal } from 'd3-random';
+import { nest } from 'd3-collection';
 
 function toVectorColor(colorStr) {
-  const rgb = d3.rgb(colorStr);
-  return [rgb.r / 255, rgb.g / 255, rgb.b / 255];
+  const _rgb = rgb(colorStr);
+  return [_rgb.r / 255, _rgb.g / 255, _rgb.b / 255];
 }
 
 function expandImageData(compressed, width, height) {
@@ -13,12 +22,10 @@ function expandImageData(compressed, width, height) {
   const scaledWidth = width;
   const scaledHeight = width / imgAspect;
   const yTranslate = (height - scaledHeight) / 2;
-  const xScale = d3
-    .scaleLinear()
+  const xScale = scaleLinear()
     .domain([0, compressed.width])
     .range([0, scaledWidth]);
-  const yScale = d3
-    .scaleLinear()
+  const yScale = scaleLinear()
     .domain([0, compressed.height])
     .range([yTranslate, scaledHeight + yTranslate]);
   const hue = 205;
@@ -27,7 +34,7 @@ function expandImageData(compressed, width, height) {
     return {
       x: xScale(Math.round(i % compressed.width)),
       y: yScale(Math.floor(i / compressed.width)),
-      color: toVectorColor(d3.hsl(hue, saturation, d).toString()),
+      color: toVectorColor(hsl(hue, saturation, d).toString()),
     };
   });
   return points;
@@ -61,19 +68,17 @@ function loadData(width, height) {
 }
 
 function colorDataByContinent(data, citiesData) {
-  const colorScale = d3
-    .scaleOrdinal()
+  const colorScale = scaleOrdinal()
     .domain(['NA', 'SA', 'EU', 'AS', 'AF', 'OC', 'AN'])
     .range(
-      d3
-        .range(0, 1, 1 / 6)
+      range(0, 1, 1 / 6)
         .concat(1)
-        .map(d3.scaleSequential(d3.interpolateCool))
+        .map(scaleSequential(interpolateCool))
     );
   const varyLightness = function(color) {
-    const hsl = d3.hsl(color);
-    hsl.l *= 0.1 + Math.random();
-    return hsl.toString();
+    const _hsl = hsl(color);
+    _hsl.l *= 0.1 + Math.random();
+    return _hsl.toString();
   };
   data.forEach(function(d, i) {
     d.color = toVectorColor(varyLightness(colorScale(citiesData[i].continent)));
@@ -82,17 +87,17 @@ function colorDataByContinent(data, citiesData) {
 
 function citiesLayout(points, width, height, citiesData) {
   function projectData(data) {
-    const latExtent = d3.extent(citiesData, function(d) {
+    const latExtent = extent(citiesData, function(d) {
       return d.lat;
     });
-    const lngExtent = d3.extent(citiesData, function(d) {
+    const lngExtent = extent(citiesData, function(d) {
       return d.lng;
     });
     const extentGeoJson = {
       type: 'LineString',
       coordinates: [[lngExtent[0], latExtent[0]], [lngExtent[1], latExtent[1]]],
     };
-    const projection = d3.geoMercator().fitSize([width, height], extentGeoJson);
+    const projection = geoMercator().fitSize([width, height], extentGeoJson);
     data.forEach(function(d, i) {
       const city = citiesData[i];
       const location = projection([city.lng, city.lat]);
@@ -114,8 +119,7 @@ function photoLayout(points, width, height, imgData) {
 function barsLayout(points, width, height, citiesData) {
   const pointWidth = width / 800;
   const pointMargin = 1;
-  const byContinent = d3
-    .nest()
+  const byContinent = nest()
     .key(function(d) {
       return d.continent;
     })
@@ -148,8 +152,7 @@ function barsLayout(points, width, height, citiesData) {
     cumulativeBinWidth += binWidth - 1;
     return bin;
   });
-  const bins = d3
-    .nest()
+  const bins = nest()
     .key(function(d) {
       return d.continent;
     })
@@ -184,7 +187,7 @@ function barsLayout(points, width, height, citiesData) {
 
 function swarmLayout(points, width, height, citiesData) {
   citiesLayout(points, width, height, citiesData);
-  const rng = d3.randomNormal(0, 0.3);
+  const rng = randomNormal(0, 0.3);
   points.forEach(function(d, i) {
     d.y = 0.75 * rng() * height + height / 2;
   });
@@ -192,17 +195,16 @@ function swarmLayout(points, width, height, citiesData) {
 
 function areaLayout(points, width, height, citiesData) {
   colorDataByContinent(points, citiesData);
-  const rng = d3.randomNormal(0, 0.2);
+  const rng = randomNormal(0, 0.2);
   const pointWidth = Math.round(width / 800);
   const pointMargin = 1;
   const pointHeight = pointWidth * 0.375;
-  const latExtent = d3.extent(citiesData, function(d) {
+  const latExtent = extent(citiesData, function(d) {
     return d.lat;
   });
-  const xScale = d3
-    .scaleQuantize()
+  const xScale = scaleQuantize()
     .domain(latExtent)
-    .range(d3.range(0, width, pointWidth + pointMargin));
+    .range(range(0, width, pointWidth + pointMargin));
   const binCounts = xScale.range().reduce(function(accum, binNum) {
     accum[binNum] = 0;
     return accum;

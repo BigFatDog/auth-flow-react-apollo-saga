@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
-import { loadData } from './algs';
 import createREGL from 'regl';
+
+import { loadData } from './algs';
 import render from './render';
 
 const width = window.innerWidth;
@@ -21,7 +22,7 @@ const Vartan = props => {
             console.error('Error initializing regl', err);
             return;
           }
-          render(regl, citiesData, imgData);
+          render({ regl, citiesData, imgData, width, height });
         },
       });
     });

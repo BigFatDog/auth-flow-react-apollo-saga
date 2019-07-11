@@ -1,4 +1,12 @@
-import * as d3 from 'd3';
+import { rgb } from 'd3-color';
+import { range } from 'd3-array';
+import { scaleSequential, scaleLinear } from 'd3-scale';
+import {
+  interpolateViridis,
+  interpolateMagma,
+  interpolateInferno,
+  interpolateCool,
+} from 'd3-scale-chromatic';
 import {
   phyllotaxisLayout,
   areaLayout,
@@ -8,10 +16,7 @@ import {
   citiesLayout,
 } from './algs';
 
-const width = window.innerWidth;
-const height = window.innerHeight;
-
-const render = (regl, citiesData, imgData) => {
+const render = ({ regl, citiesData, imgData, width, height }) => {
   const numPoints = 100000;
   const pointWidth = 4;
   const duration = 1500;
@@ -61,21 +66,20 @@ const render = (regl, citiesData, imgData) => {
   // wrap d3 color scales so they produce vec3s with values 0-1
   // also limit the t value to remove darkest color
   function wrapColorScale(scale) {
-    const tScale = d3
-      .scaleLinear()
+    const tScale = scaleLinear()
       .domain([0, 1])
       .range([0.4, 1]);
     return function(t) {
-      const rgb = d3.rgb(scale(tScale(t)));
-      return [rgb.r / 255, rgb.g / 255, rgb.b / 255];
+      const _rgb = rgb(scale(tScale(t)));
+      return [_rgb.r / 255, _rgb.g / 255, _rgb.b / 255];
     };
   }
 
   const colorScales = [
-    d3.scaleSequential(d3.interpolateViridis),
-    d3.scaleSequential(d3.interpolateMagma),
-    d3.scaleSequential(d3.interpolateInferno),
-    d3.scaleSequential(d3.interpolateCool),
+    scaleSequential(interpolateViridis),
+    scaleSequential(interpolateMagma),
+    scaleSequential(interpolateInferno),
+    scaleSequential(interpolateCool),
   ].map(wrapColorScale);
   let currentColorScale = 0;
 
@@ -101,7 +105,7 @@ const render = (regl, citiesData, imgData) => {
         colorEnd: points.map(function(d) {
           return d.colorEnd;
         }),
-        index: d3.range(points.length),
+        index: range(points.length),
       },
 
       uniforms: {
@@ -213,7 +217,7 @@ const render = (regl, citiesData, imgData) => {
   }
 
   // create initial set of points
-  const points = d3.range(numPoints).map(function(d) {
+  const points = range(numPoints).map(function(d) {
     return {};
   });
 
