@@ -3,7 +3,7 @@ import {
   scaleLinear,
   scaleSequential,
   scaleOrdinal,
-  scaleQuantize,
+  scaleQuantize
 } from 'd3-scale';
 import { hsl, rgb } from 'd3-color';
 import { extent, range } from 'd3-array';
@@ -12,12 +12,12 @@ import { geoMercator } from 'd3-geo';
 import { randomNormal } from 'd3-random';
 import { nest } from 'd3-collection';
 
-function toVectorColor(colorStr) {
+const toVectorColor = colorStr => {
   const _rgb = rgb(colorStr);
   return [_rgb.r / 255, _rgb.g / 255, _rgb.b / 255];
-}
+};
 
-function expandImageData(compressed, width, height) {
+const expandImageData = (compressed, width, height) => {
   const imgAspect = compressed.width / compressed.height;
   const scaledWidth = width;
   const scaledHeight = width / imgAspect;
@@ -30,75 +30,64 @@ function expandImageData(compressed, width, height) {
     .range([yTranslate, scaledHeight + yTranslate]);
   const hue = 205;
   const saturation = 0.74;
-  const points = compressed.points.map(function(d, i) {
-    return {
-      x: xScale(Math.round(i % compressed.width)),
-      y: yScale(Math.floor(i / compressed.width)),
-      color: toVectorColor(hsl(hue, saturation, d).toString()),
-    };
-  });
+  const points = compressed.points.map((d, i) => ({
+    x: xScale(Math.round(i % compressed.width)),
+    y: yScale(Math.floor(i / compressed.width)),
+    color: toVectorColor(hsl(hue, saturation, d).toString()),
+  }));
   return points;
-}
+};
 
-function sortImageData(imgData, width, height) {
+const sortImageData = (imgData, width, height) => {
   const xMid = width / 2;
   const yMid = height / 2;
-  const distToMiddle = function(d) {
-    return Math.pow(d.x - xMid, 2) + Math.pow(d.y - yMid, 2);
-  };
-  imgData.sort(function(a, b) {
-    return distToMiddle(a) - distToMiddle(b);
-  });
+  const distToMiddle = d => Math.pow(d.x - xMid, 2) + Math.pow(d.y - yMid, 2);
+  imgData.sort((a, b) => distToMiddle(a) - distToMiddle(b));
   return imgData;
-}
+};
 
-function processImageData(compressed, width, height) {
+const processImageData = (compressed, width, height) => {
   const expanded = expandImageData(compressed, width, height);
   return sortImageData(expanded, width, height);
-}
+};
 
-function loadData(width, height) {
+const loadData = (width, height) => {
   const p1 = csv('./sampled_cities_data.csv').then(citiesData =>
-    citiesData.map(d => ({ continent: d.continent, lat: +d.lat, lng: +d.lng }))
+    citiesData.map(d => ({ continent: d.continent, lat: +d.lat, lng: +d.lng }));
   );
   const p2 = json('./img.json').then(imgData =>
-    processImageData(imgData, width, height)
+    processImageData(imgData, width, height);
   );
   return Promise.all([p1, p2]);
-}
+};
 
-function colorDataByContinent(data, citiesData) {
+const colorDataByContinent = (data, citiesData) => {
   const colorScale = scaleOrdinal()
     .domain(['NA', 'SA', 'EU', 'AS', 'AF', 'OC', 'AN'])
-    .range(
-      range(0, 1, 1 / 6)
+    .range(range(0, 1, 1 / 6)
         .concat(1)
         .map(scaleSequential(interpolateCool))
     );
-  const varyLightness = function(color) {
+  const varyLightness = color => {
     const _hsl = hsl(color);
     _hsl.l *= 0.1 + Math.random();
     return _hsl.toString();
   };
-  data.forEach(function(d, i) {
+  data.forEach((d, i) => {
     d.color = toVectorColor(varyLightness(colorScale(citiesData[i].continent)));
   });
 }
 
-function citiesLayout(points, width, height, citiesData) {
+const citiesLayout = (points, width, height, citiesData) => {
   function projectData(data) {
-    const latExtent = extent(citiesData, function(d) {
-      return d.lat;
-    });
-    const lngExtent = extent(citiesData, function(d) {
-      return d.lng;
-    });
+    const latExtent = extent(citiesData, d => d.lat);
+    const lngExtent = extent(citiesData, d => d.lng);
     const extentGeoJson = {
       type: 'LineString',
       coordinates: [[lngExtent[0], latExtent[0]], [lngExtent[1], latExtent[1]]],
     };
     const projection = geoMercator().fitSize([width, height], extentGeoJson);
-    data.forEach(function(d, i) {
+    data.forEach((d, i) => {
       const city = citiesData[i];
       const location = projection([city.lng, city.lat]);
       d.x = location[0];
@@ -110,29 +99,25 @@ function citiesLayout(points, width, height, citiesData) {
   colorDataByContinent(points, citiesData);
 }
 
-function photoLayout(points, width, height, imgData) {
-  points.forEach(function(d, i) {
+const photoLayout = (points, width, height, imgData) => {
+  points.forEach((d, i) => {
     Object.assign(d, imgData[i]);
   });
 }
 
-function barsLayout(points, width, height, citiesData) {
+const barsLayout = (points, width, height, citiesData) => {
   const pointWidth = width / 800;
   const pointMargin = 1;
   const byContinent = nest()
-    .key(function(d) {
-      return d.continent;
-    })
+    .key(d => d.continent)
     .entries(citiesData)
-    .filter(function(d) {
-      return d.values.length > 10;
-    });
+    .filter(d => d.values.length > 10);
   const binMargin = pointWidth * 10;
   const numBins = byContinent.length;
   const minBinWidth = width / (numBins * 2.5);
   const totalExtraWidth =
     width - binMargin * (numBins - 1) - minBinWidth * numBins;
-  const binWidths = byContinent.map(function(d) {
+  const binWidths = byContinent.map(d => {
     return (
       Math.ceil((d.values.length / citiesData.length) * totalExtraWidth) +
       minBinWidth
@@ -141,7 +126,7 @@ function barsLayout(points, width, height, citiesData) {
   console.log(binWidths);
   const increment = pointWidth + pointMargin;
   let cumulativeBinWidth = 0;
-  const binsArray = binWidths.map(function(binWidth, i) {
+  const binsArray = binWidths.map((binWidth, i) => {
     const bin = {
       continent: byContinent[i].key,
       binWidth: binWidth,
@@ -153,16 +138,12 @@ function barsLayout(points, width, height, citiesData) {
     return bin;
   });
   const bins = nest()
-    .key(function(d) {
-      return d.continent;
-    })
-    .rollup(function(d) {
-      return d[0];
-    })
+    .key(d => d.continent)
+    .rollup(d => d[0])
     .object(binsArray);
   console.log('got bins', bins);
   colorDataByContinent(points, citiesData);
-  const arrangement = points.map(function(d, i) {
+  const arrangement = points.map((d, i) => {
     const continent = citiesData[i].continent;
     const bin = bins[continent];
     if (!bin) {
@@ -179,47 +160,42 @@ function barsLayout(points, width, height, citiesData) {
     bin.binCount += 1;
     return { x: x, y: y, color: d.color };
   });
-  arrangement.forEach(function(d, i) {
+  arrangement.forEach((d, i) => {
     Object.assign(points[i], d);
   });
   console.log('points[0]=', points[0]);
 }
 
-function swarmLayout(points, width, height, citiesData) {
+const swarmLayout = (points, width, height, citiesData) => {
   citiesLayout(points, width, height, citiesData);
   const rng = randomNormal(0, 0.3);
-  points.forEach(function(d, i) {
+  points.forEach((d, i) => {
     d.y = 0.75 * rng() * height + height / 2;
   });
 }
 
-function areaLayout(points, width, height, citiesData) {
+const areaLayout = (points, width, height, citiesData) => {
   colorDataByContinent(points, citiesData);
   const rng = randomNormal(0, 0.2);
   const pointWidth = Math.round(width / 800);
   const pointMargin = 1;
   const pointHeight = pointWidth * 0.375;
-  const latExtent = extent(citiesData, function(d) {
-    return d.lat;
-  });
+  const latExtent = extent(citiesData, d => d.lat);
   const xScale = scaleQuantize()
     .domain(latExtent)
     .range(range(0, width, pointWidth + pointMargin));
-  const binCounts = xScale.range().reduce(function(accum, binNum) {
+  const binCounts = xScale.range().reduce((accum, binNum) => {
     accum[binNum] = 0;
     return accum;
   }, {});
-  const byContinent = d3
-    .nest()
-    .key(function(d) {
-      return d.continent;
-    })
+  const byContinent = nest()
+    .key(d => d.continent)
     .entries(citiesData);
-  citiesData.forEach(function(city, i) {
+  citiesData.forEach((city, i) => {
     city.d = points[i];
   });
-  byContinent.forEach(function(continent, i) {
-    continent.values.forEach(function(city, j) {
+  byContinent.forEach((continent, i) => {
+    continent.values.forEach((city, j) => {
       const d = city.d;
       const binNum = xScale(city.lat);
       d.x = binNum;
@@ -229,20 +205,16 @@ function areaLayout(points, width, height, citiesData) {
   });
 }
 
-function phyllotaxisLayout(points, pointWidth, xOffset, yOffset, citiesData) {
+const phyllotaxisLayout = (points, pointWidth, xOffset, yOffset, citiesData) => {
   if (xOffset === void 0) xOffset = 0;
   if (yOffset === void 0) yOffset = 0;
   colorDataByContinent(points, citiesData);
   const sortData = citiesData
-    .map(function(city, index) {
-      return { index: index, continent: city.continent };
-    })
-    .sort(function(a, b) {
-      return a.continent.localeCompare(b.continent);
-    });
+    .map((city, index) => ({ index: index, continent: city.continent })))
+    .sort((a, b) => a.continent.localeCompare(b.continent));
   const theta = Math.PI * (3 - Math.sqrt(5));
   const pointRadius = pointWidth / 2;
-  sortData.forEach(function(d, i) {
+  sortData.forEach((d, i) => {
     const point = points[d.index];
     const index = i % points.length;
     const phylloX = pointRadius * Math.sqrt(index) * Math.cos(index * theta);
