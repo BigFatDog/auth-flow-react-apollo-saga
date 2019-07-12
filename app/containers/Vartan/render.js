@@ -44,14 +44,12 @@ const render = ({ regl, citiesData, imgData, width, height }) => {
 
   // wrap d3 color scales so they produce vec3s with values 0-1
   // also limit the t value to remove darkest color
-  function wrapColorScale(scale) {
+  const wrapColorScale = scale => t => {
     const tScale = scaleLinear()
       .domain([0, 1])
       .range([0.4, 1]);
-    return t => {
-      const _rgb = rgb(scale(tScale(t)));
-      return [_rgb.r / 255, _rgb.g / 255, _rgb.b / 255];
-    };
+    const _rgb = rgb(scale(tScale(t)));
+    return [_rgb.r / 255, _rgb.g / 255, _rgb.b / 255];
   }
 
   const colorScales = [
@@ -131,7 +129,7 @@ const render = ({ regl, citiesData, imgData, width, height }) => {
 
     // start an animation loop
     let startTime = null; // in seconds
-    const frameLoop = regl.frame(function(_ref3) {
+    const frameLoop = regl.frame(_ref3 => {
       const time = _ref3.time;
 
       // keep track of start time so we can get time elapsed
@@ -171,7 +169,7 @@ const render = ({ regl, citiesData, imgData, width, height }) => {
 
         // when restarting at the beginning, come back from the middle again
         if (currentLayout === 0) {
-          points.forEach(function(d, i) {
+          points.forEach(d => {
             d.tx = width / 2;
             d.ty = height / 2;
             d.colorEnd = [0, 0, 0];
