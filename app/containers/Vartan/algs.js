@@ -1,6 +1,4 @@
-import { csv, json } from 'd3-fetch';
 import {
-  scaleLinear,
   scaleSequential,
   scaleOrdinal,
   scaleQuantize,
