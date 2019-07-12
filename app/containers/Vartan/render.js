@@ -35,17 +35,11 @@ const render = ({ regl, citiesData, imgData, width, height }) => {
     height / 2,
     citiesData
   );
-  const toMiddle = points => points.map(d => {
-    d.x = width / 2;
-    d.y = height / 2;
-    d.color = [0, 0, 0];
-  });
-
   const toBlack = points => points.map(d =>
     d.color = [0, 0, 0]
   );
 
-  const layouts = [toPhyllotaxis, toCities, toArea, toBars, toPhoto, toMiddle, toBlack];
+  const layouts = [toPhyllotaxis, toSwarm, toCities, toArea, toBars, toPhoto, toBlack];
   let currentLayout = 0;
 
   // wrap d3 color scales so they produce vec3s with values 0-1
