@@ -53,10 +53,10 @@ const processImageData = (compressed, width, height) => {
 
 const loadData = (width, height) => {
   const p1 = csv('./sampled_cities_data.csv').then(citiesData =>
-    citiesData.map(d => ({ continent: d.continent, lat: +d.lat, lng: +d.lng }));
+    citiesData.map(d => ({ continent: d.continent, lat: +d.lat, lng: +d.lng }))
   );
   const p2 = json('./img.json').then(imgData =>
-    processImageData(imgData, width, height);
+    processImageData(imgData, width, height)
   );
   return Promise.all([p1, p2]);
 };
@@ -210,7 +210,7 @@ const phyllotaxisLayout = (points, pointWidth, xOffset, yOffset, citiesData) => 
   if (yOffset === void 0) yOffset = 0;
   colorDataByContinent(points, citiesData);
   const sortData = citiesData
-    .map((city, index) => ({ index: index, continent: city.continent })))
+    .map((city, index) => ({ index: index, continent: city.continent }))
     .sort((a, b) => a.continent.localeCompare(b.continent));
   const theta = Math.PI * (3 - Math.sqrt(5));
   const pointRadius = pointWidth / 2;
