@@ -3,7 +3,7 @@ import {
   scaleLinear,
   scaleSequential,
   scaleOrdinal,
-  scaleQuantize
+  scaleQuantize,
 } from 'd3-scale';
 import { hsl, rgb } from 'd3-color';
 import { extent, range } from 'd3-array';
@@ -17,54 +17,11 @@ const toVectorColor = colorStr => {
   return [_rgb.r / 255, _rgb.g / 255, _rgb.b / 255];
 };
 
-const expandImageData = (compressed, width, height) => {
-  const imgAspect = compressed.width / compressed.height;
-  const scaledWidth = width;
-  const scaledHeight = width / imgAspect;
-  const yTranslate = (height - scaledHeight) / 2;
-  const xScale = scaleLinear()
-    .domain([0, compressed.width])
-    .range([0, scaledWidth]);
-  const yScale = scaleLinear()
-    .domain([0, compressed.height])
-    .range([yTranslate, scaledHeight + yTranslate]);
-  const hue = 205;
-  const saturation = 0.74;
-  const points = compressed.points.map((d, i) => ({
-    x: xScale(Math.round(i % compressed.width)),
-    y: yScale(Math.floor(i / compressed.width)),
-    color: toVectorColor(hsl(hue, saturation, d).toString()),
-  }));
-  return points;
-};
-
-const sortImageData = (imgData, width, height) => {
-  const xMid = width / 2;
-  const yMid = height / 2;
-  const distToMiddle = d => Math.pow(d.x - xMid, 2) + Math.pow(d.y - yMid, 2);
-  imgData.sort((a, b) => distToMiddle(a) - distToMiddle(b));
-  return imgData;
-};
-
-const processImageData = (compressed, width, height) => {
-  const expanded = expandImageData(compressed, width, height);
-  return sortImageData(expanded, width, height);
-};
-
-const loadData = (width, height) => {
-  const p1 = csv('./sampled_cities_data.csv').then(citiesData =>
-    citiesData.map(d => ({ continent: d.continent, lat: +d.lat, lng: +d.lng }))
-  );
-  const p2 = json('./img.json').then(imgData =>
-    processImageData(imgData, width, height)
-  );
-  return Promise.all([p1, p2]);
-};
-
 const colorDataByContinent = (data, citiesData) => {
   const colorScale = scaleOrdinal()
     .domain(['NA', 'SA', 'EU', 'AS', 'AF', 'OC', 'AN'])
-    .range(range(0, 1, 1 / 6)
+    .range(
+      range(0, 1, 1 / 6)
         .concat(1)
         .map(scaleSequential(interpolateCool))
     );
@@ -76,7 +33,7 @@ const colorDataByContinent = (data, citiesData) => {
   data.forEach((d, i) => {
     d.color = toVectorColor(varyLightness(colorScale(citiesData[i].continent)));
   });
-}
+};
 
 const citiesLayout = (points, width, height, citiesData) => {
   function projectData(data) {
@@ -97,13 +54,13 @@ const citiesLayout = (points, width, height, citiesData) => {
 
   projectData(points);
   colorDataByContinent(points, citiesData);
-}
+};
 
 const photoLayout = (points, width, height, imgData) => {
   points.forEach((d, i) => {
     Object.assign(d, imgData[i]);
   });
-}
+};
 
 const barsLayout = (points, width, height, citiesData) => {
   const pointWidth = width / 800;
@@ -164,7 +121,7 @@ const barsLayout = (points, width, height, citiesData) => {
     Object.assign(points[i], d);
   });
   console.log('points[0]=', points[0]);
-}
+};
 
 const swarmLayout = (points, width, height, citiesData) => {
   citiesLayout(points, width, height, citiesData);
@@ -172,7 +129,7 @@ const swarmLayout = (points, width, height, citiesData) => {
   points.forEach((d, i) => {
     d.y = 0.75 * rng() * height + height / 2;
   });
-}
+};
 
 const areaLayout = (points, width, height, citiesData) => {
   colorDataByContinent(points, citiesData);
@@ -203,9 +160,15 @@ const areaLayout = (points, width, height, citiesData) => {
       binCounts[binNum] += 1;
     });
   });
-}
+};
 
-const phyllotaxisLayout = (points, pointWidth, xOffset, yOffset, citiesData) => {
+const phyllotaxisLayout = (
+  points,
+  pointWidth,
+  xOffset,
+  yOffset,
+  citiesData
+) => {
   if (xOffset === void 0) xOffset = 0;
   if (yOffset === void 0) yOffset = 0;
   colorDataByContinent(points, citiesData);
@@ -223,14 +186,10 @@ const phyllotaxisLayout = (points, pointWidth, xOffset, yOffset, citiesData) => 
     point.y = yOffset + phylloY - pointRadius;
   });
   return points;
-}
+};
 
 export {
   toVectorColor,
-  expandImageData,
-  sortImageData,
-  processImageData,
-  loadData,
   phyllotaxisLayout,
   areaLayout,
   swarmLayout,
