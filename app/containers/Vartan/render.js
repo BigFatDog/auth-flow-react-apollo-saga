@@ -23,44 +23,29 @@ const render = ({ regl, citiesData, imgData, width, height }) => {
   const delayByIndex = 500 / numPoints;
   const maxDuration = duration + delayByIndex * numPoints; // include max delay in here
 
-  const toCities = function toCities(points) {
-    return citiesLayout(points, width, height, citiesData);
-  };
-  const toBars = function toBars(points) {
-    return barsLayout(points, width, height, citiesData);
-  };
-  const toSwarm = function toSwarm(points) {
-    return swarmLayout(points, width, height, citiesData);
-  };
-  const toPhoto = function toPhoto(points) {
-    return photoLayout(points, width, height, imgData);
-  };
-  const toArea = function toArea(points) {
-    return areaLayout(points, width, height, citiesData);
-  };
-  const toPhyllotaxis = function toPhyllotaxis(points) {
-    return phyllotaxisLayout(
-      points,
-      pointWidth,
-      width / 2,
-      height / 2,
-      citiesData
-    );
-  };
-  const toMiddle = function toMiddle(points) {
-    points.forEach(function(d, i) {
-      d.x = width / 2;
-      d.y = height / 2;
-      d.color = [0, 0, 0];
-    });
-  };
-  const toBlack = function toBlack(points) {
-    points.forEach(function(d, i) {
-      d.color = [0, 0, 0];
-    });
-  };
+  const toCities = points => citiesLayout(points, width, height, citiesData);
+  const toBars = points => barsLayout(points, width, height, citiesData);
+  const toSwarm = points => swarmLayout(points, width, height, citiesData);
+  const toPhoto = points => photoLayout(points, width, height, imgData);
+  const toArea = points => areaLayout(points, width, height, citiesData);
+  const toPhyllotaxis = points => phyllotaxisLayout(
+    points,
+    pointWidth,
+    width / 2,
+    height / 2,
+    citiesData
+  );
+  const toMiddle = points => points.map(d => {
+    d.x = width / 2;
+    d.y = height / 2;
+    d.color = [0, 0, 0];
+  });
 
-  const layouts = [toPhyllotaxis, toCities, toArea, toBars, toPhoto, toBlack];
+  const toBlack = points => points.map(d =>
+    d.color = [0, 0, 0]
+  );
+
+  const layouts = [toPhyllotaxis, toCities, toArea, toBars, toPhoto, toMiddle, toBlack];
   let currentLayout = 0;
 
   // wrap d3 color scales so they produce vec3s with values 0-1
@@ -69,7 +54,7 @@ const render = ({ regl, citiesData, imgData, width, height }) => {
     const tScale = scaleLinear()
       .domain([0, 1])
       .range([0.4, 1]);
-    return function(t) {
+    return t => {
       const _rgb = rgb(scale(tScale(t)));
       return [_rgb.r / 255, _rgb.g / 255, _rgb.b / 255];
     };
