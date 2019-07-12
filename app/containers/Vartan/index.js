@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
 import createREGL from 'regl';
-
-import { toVectorColor } from './algs';
-import render from './render';
 import { scaleLinear } from 'd3-scale';
 import { hsl } from 'd3-color';
 import { csv, json } from 'd3-fetch';
+
+import { toVectorColor } from './algs';
+import render from './render';
 
 const width = window.innerWidth;
 const height = window.innerHeight;
