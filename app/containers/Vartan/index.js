@@ -1,14 +1,12 @@
 import React, { useEffect } from 'react';
 import createREGL from 'regl';
 import { scaleLinear } from 'd3-scale';
-import { hsl } from 'd3-color';
+import { hsl, color } from 'd3-color';
 import { csv, json } from 'd3-fetch';
 
 import { toVectorColor } from './algs';
 import render from './render';
 
-const width = window.innerWidth;
-const height = window.innerHeight;
 
 const expandImageData = (compressed, width, height) => {
   const imgAspect = compressed.width / compressed.height;
@@ -55,6 +53,9 @@ const loadData = (width, height) => {
 
 const Vartan = props => {
   useEffect(() => {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
     loadData(width, height).then(loaded => {
       const citiesData = loaded[0];
       const imgData = loaded[1];
