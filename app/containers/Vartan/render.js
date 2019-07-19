@@ -33,11 +33,11 @@ const render = ({ regl, citiesData, imgData, width, height }) => {
   const toBlack = points => points.map(d => (d.color = [0, 0, 0]));
 
   const layouts = [
-    toPhyllotaxis,
-    toSwarm,
-    toCities,
-    toArea,
-    toBars,
+    // toPhyllotaxis,
+    // toSwarm,
+    // toCities,
+    // toArea,
+    // toBars,
     toPhoto,
     toBlack,
   ];

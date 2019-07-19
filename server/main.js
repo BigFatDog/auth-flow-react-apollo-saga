@@ -15,6 +15,12 @@ import login from './api/auth/login';
 import register from './api/auth/register';
 import logout from './api/auth/logout';
 import verifyToken from './api/auth/verify';
+import {
+  getCompletions,
+  saveCompletions,
+  deleteCompletions,
+  incrementCompletion,
+} from './api/search';
 
 import addGraphQLSubscriptions from './middlewares/graphql-subscriptions';
 import startMongo from './database/mongo';
@@ -54,6 +60,11 @@ app.post('/verifyToken', verifyToken(setting.SECRET));
 app.post('/signup', register(setting.SECRET));
 app.post('/logout', logout);
 app.use('/', express.static('public', { etag: false }));
+
+router.get('/completions/get', getCompletions);
+router.post('/completions/save', saveCompletions);
+router.post('/completions/delete', deleteCompletions);
+router.put('/completion/increment', incrementCompletion);
 
 // get the intended host and port number, use localhost and port 3000 if not provided
 const customHost = argv.host || process.env.HOST;

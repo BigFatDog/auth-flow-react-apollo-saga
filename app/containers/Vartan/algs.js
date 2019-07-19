@@ -1,8 +1,4 @@
-import {
-  scaleSequential,
-  scaleOrdinal,
-  scaleQuantize,
-} from 'd3-scale';
+import { scaleSequential, scaleOrdinal, scaleQuantize } from 'd3-scale';
 import { hsl, rgb } from 'd3-color';
 import { extent, range } from 'd3-array';
 import { interpolateCool } from 'd3-scale-chromatic';

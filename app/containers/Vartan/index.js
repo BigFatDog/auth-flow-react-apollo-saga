@@ -7,7 +7,6 @@ import { csv, json } from 'd3-fetch';
 import { toVectorColor } from './algs';
 import render from './render';
 
-
 const expandImageData = (compressed, width, height) => {
   const imgAspect = compressed.width / compressed.height;
   const scaledWidth = width;
@@ -19,13 +18,29 @@ const expandImageData = (compressed, width, height) => {
   const yScale = scaleLinear()
     .domain([0, compressed.height])
     .range([yTranslate, scaledHeight + yTranslate]);
+
+  const xStep = compressed.width / 1000;
+  const yStep = compressed.height / 1000;
   const hue = 205;
   const saturation = 0.74;
-  return compressed.points.map((d, i) => ({
-    x: xScale(Math.round(i % compressed.width)),
-    y: yScale(Math.floor(i / compressed.width)),
-    color: toVectorColor(hsl(hue, saturation, d).toString()),
-  }));
+
+  const pixelData = [];
+  let idx = 0;
+  for (let i = 0; i < compressed.width; i += xStep) {
+    for (let j = 0; j < compressed.height; j += yStep) {
+      pixelData.push({
+        x: xScale(i),
+        y: yScale(j),
+        color: toVectorColor(
+          hsl(hue, saturation, compressed.points[idx]).toString()
+        ),
+      });
+      idx++;
+    }
+  }
+  console.log(idx);
+
+  return pixelData;
 };
 
 const sortImageData = (imgData, width, height) => {
@@ -45,7 +60,7 @@ const loadData = (width, height) => {
   const p1 = csv('./sampled_cities_data.csv').then(citiesData =>
     citiesData.map(d => ({ continent: d.continent, lat: +d.lat, lng: +d.lng }))
   );
-  const p2 = json('./img.json').then(imgData =>
+  const p2 = json('./test.json').then(imgData =>
     processImageData(imgData, width, height)
   );
   return Promise.all([p1, p2]);
