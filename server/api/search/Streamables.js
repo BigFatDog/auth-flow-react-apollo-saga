@@ -1,9 +1,9 @@
 import { Writable } from 'stream';
 
 class Writer extends Writable {
-  constructor(Prefixy, tenant, options = { objectMode: true }) {
+  constructor(SearchCache, tenant, options = { objectMode: true }) {
     super(options);
-    this.Prefixy = Prefixy;
+    this.SearchCache = SearchCache;
     this.tenant = tenant;
   }
 
@@ -19,7 +19,7 @@ class Writer extends Writable {
     console.log('Writing to redis, please wait...');
     Writer.logMemory('This import');
 
-    this.Prefixy.insertCompletions([item], this.tenant)
+    this.SearchCache.insertCompletions([item], this.tenant)
       .then(() => callback())
       .catch(callback);
   }

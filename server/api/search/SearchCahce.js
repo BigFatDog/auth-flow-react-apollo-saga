@@ -3,7 +3,7 @@ import mongo from 'mongodb';
 import fs from 'fs';
 import path from 'path';
 import JSONStream from 'JSONStream';
-import Writer from 'Streamables';
+import Writer from './Streamables';
 import bluebird from 'bluebird';
 
 bluebird.promisifyAll(redis.RedisClient.prototype);
@@ -19,7 +19,7 @@ const validateInputIsArray = (input, funcName) => {
 
 class SearchCache {
   constructor() {
-    const opts = Prefixy.parseOpts();
+    const opts = SearchCache.parseOpts();
 
     this.redisUrl = opts.redisUrl;
     this.mongoUrl = opts.mongoUrl;
@@ -92,7 +92,7 @@ class SearchCache {
     };
 
     this.test = false;
-    this.mongoUrl = this.mongoUrl + 'prefixy';
+    this.mongoUrl = this.mongoUrl + 'SearchCache';
     this.client = redis.createClient(redisOptions);
   }
 

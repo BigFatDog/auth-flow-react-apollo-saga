@@ -61,10 +61,10 @@ app.post('/signup', register(setting.SECRET));
 app.post('/logout', logout);
 app.use('/', express.static('public', { etag: false }));
 
-router.get('/completions/get', getCompletions);
-router.post('/completions/save', saveCompletions);
-router.post('/completions/delete', deleteCompletions);
-router.put('/completion/increment', incrementCompletion);
+app.get('/completions/get', getCompletions);
+app.post('/completions/save', saveCompletions);
+app.post('/completions/delete', deleteCompletions);
+app.put('/completion/increment', incrementCompletion);
 
 // get the intended host and port number, use localhost and port 3000 if not provided
 const customHost = argv.host || process.env.HOST;
