@@ -5,11 +5,11 @@ import Autosuggest from 'react-autosuggest';
 const languages = [
   {
     name: 'C',
-    year: 1972
+    year: 1972,
   },
   {
     name: 'Elm',
-    year: 2012
+    year: 2012,
   },
 ];
 
@@ -18,9 +18,11 @@ const getSuggestions = value => {
   const inputValue = value.trim().toLowerCase();
   const inputLength = inputValue.length;
 
-  return inputLength === 0 ? [] : languages.filter(lang =>
-    lang.name.toLowerCase().slice(0, inputLength) === inputValue
-  );
+  return inputLength === 0
+    ? []
+    : languages.filter(
+        lang => lang.name.toLowerCase().slice(0, inputLength) === inputValue
+      );
 };
 
 // When suggestion is clicked, Autosuggest needs to populate the input
@@ -29,11 +31,7 @@ const getSuggestions = value => {
 const getSuggestionValue = suggestion => suggestion.name;
 
 // Use your imagination to render suggestions.
-const renderSuggestion = suggestion => (
-  <div>
-    {suggestion.name}
-  </div>
-);
+const renderSuggestion = suggestion => <div>{suggestion.name}</div>;
 
 class Search extends React.Component {
   constructor() {
@@ -46,13 +44,13 @@ class Search extends React.Component {
     // and they are initially empty because the Autosuggest is closed.
     this.state = {
       value: '',
-      suggestions: []
+      suggestions: [],
     };
   }
 
   onChange = (event, { newValue }) => {
     this.setState({
-      value: newValue
+      value: newValue,
     });
   };
 
@@ -60,14 +58,14 @@ class Search extends React.Component {
   // You already implemented this logic above, so just use it.
   onSuggestionsFetchRequested = ({ value }) => {
     this.setState({
-      suggestions: getSuggestions(value)
+      suggestions: getSuggestions(value),
     });
   };
 
   // Autosuggest will call this function every time you need to clear suggestions.
   onSuggestionsClearRequested = () => {
     this.setState({
-      suggestions: []
+      suggestions: [],
     });
   };
 
@@ -78,7 +76,7 @@ class Search extends React.Component {
     const inputProps = {
       placeholder: 'Type a programming language',
       value,
-      onChange: this.onChange
+      onChange: this.onChange,
     };
 
     // Finally, render it!
