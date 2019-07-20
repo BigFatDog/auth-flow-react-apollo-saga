@@ -34,6 +34,9 @@ const Header = props => {
         <Link to="/gl" className="nav-link">
           BigData
         </Link>
+        <Link to="/search" className="nav-link">
+          Search
+        </Link>
       </NavHeader>
       <NavHeader>
         <a className="nav-link" />

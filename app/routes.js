@@ -21,6 +21,7 @@ import PostPage from './pages/posts';
 import WelcomePage from './pages/welcome';
 import LineChart from './containers/Realtime';
 import Vartan from './containers/Vartan';
+import Search from './containers/Search';
 
 const MasterLayout = ({ component: Component, secured = false, ...rest }) =>
   secured === true ? (
@@ -56,6 +57,7 @@ export default function Routes() {
       <MasterLayout path="/post" component={PostPage} secured={true} />
       <MasterLayout path="/realtime" component={LineChart} />
       <MasterLayout path="/gl" component={Vartan} />
+      <MasterLayout path="/search" component={Search} />
       <EmptyLayoutRoute path="/login" component={Login} />
       <EmptyLayoutRoute path="/signup" component={SignUp} />
 
