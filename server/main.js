@@ -20,6 +20,7 @@ import {
   saveCompletions,
   deleteCompletions,
   incrementCompletion,
+  dumpCompletions
 } from './api/search';
 
 import addGraphQLSubscriptions from './middlewares/graphql-subscriptions';
@@ -61,10 +62,13 @@ app.post('/signup', register(setting.SECRET));
 app.post('/logout', logout);
 app.use('/', express.static('public', { etag: false }));
 
-app.get('/completions/get', getCompletions);
-app.post('/completions/save', saveCompletions);
-app.post('/completions/delete', deleteCompletions);
-app.put('/completion/increment', incrementCompletion);
+app.use('/api', tokenMiddleware(setting.SECRET));
+
+app.get('/api/completions/get', getCompletions);
+app.get('/api/completions/dump', dumpCompletions);
+app.post('/api/completions/save', saveCompletions);
+app.post('/api/completions/delete', deleteCompletions);
+app.put('/api/completion/increment', incrementCompletion);
 
 // get the intended host and port number, use localhost and port 3000 if not provided
 const customHost = argv.host || process.env.HOST;

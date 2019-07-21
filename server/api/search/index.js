@@ -65,9 +65,26 @@ const incrementCompletion = async function(req, res, next) {
   res.sendStatus(204);
 };
 
+const dumpCompletions = async function(req, res, next) {
+  const {
+    user: { _id },
+  } = req;
+  console.log(_id);
+
+  try {
+    const data = await import('./sample.json');
+    await SearchCache.invoke(() => SearchCache.insertCompletions(data, userId));
+  } catch (error) {
+    return next(error);
+  }
+
+  res.sendStatus(204);
+};
+
 export {
   getCompletions,
   saveCompletions,
   deleteCompletions,
   incrementCompletion,
+  dumpCompletions
 };
