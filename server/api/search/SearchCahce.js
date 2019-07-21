@@ -17,12 +17,14 @@ const validateInputIsArray = (input, funcName) => {
   }
 };
 
+const MONGO = 'mongodb://localhost:27017/'
+
 class SearchCache {
   constructor() {
     const opts = SearchCache.parseOpts();
 
     this.redisUrl = opts.redisUrl;
-    this.mongoUrl = opts.mongoUrl;
+    this.mongoUrl = MONGO;
     this.client; // for redis client
     this.test; // whether we are using test clients
     this.mongoClient = mongo.MongoClient;
@@ -151,31 +153,34 @@ class SearchCache {
   }
 
   async connectMongo() {
-    return this.mongoClient.connect(this.mongoUrl);
+    return await this.mongoClient.connect(this.mongoUrl);
   }
 
   async mongoInsert(prefix, tenant, completions) {
     const args = [{ prefix }, { $set: { completions } }, { upsert: true }];
-    const db = await this.connectMongo();
+    const client = await this.connectMongo();
+    const db = client.db('auth-flow');
     const col = db.collection(tenant);
     col.createIndex({ prefix: 'text' }, { background: true });
     col.findOneAndUpdate(...args, (err, r) => db.close());
   }
 
   async mongoDelete(prefix, tenant) {
-    const db = await this.connectMongo();
+    const client = await this.connectMongo();
+    const db = client.db('auth-flow');
     const col = db.collection(tenant);
-    col.findOneAndDelete({ prefix }, (err, r) => db.close());
+    col.findOneAndDelete({ prefix }, (err, r) => client.close());
   }
 
   async mongoFind(prefix, tenant) {
-    const db = await this.connectMongo();
+    const client = await this.connectMongo();
+    const db = client.db('auth-flow');
     const completions = await db
       .collection(tenant)
       .find({ prefix })
       .limit(1)
       .toArray();
-    db.close();
+    client.close();
     if (completions[0]) {
       return completions[0].completions;
     } else {

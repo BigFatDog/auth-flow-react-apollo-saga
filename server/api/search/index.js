@@ -69,7 +69,6 @@ const dumpCompletions = async function(req, res, next) {
   const {
     user: { _id },
   } = req;
-  console.log(_id);
 
   try {
     const data = await import('./sample.json');
