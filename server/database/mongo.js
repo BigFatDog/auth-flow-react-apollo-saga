@@ -23,13 +23,13 @@ export default app => {
   });
   db.on('disconnected', function() {
     console.log('MongoDB disconnected!');
-    mongoose.connect(Settings.mongodb.url, {
+    mongoose.connect(Settings.mongoUrl, {
       auto_reconnect: true,
       useNewUrlParser: true,
     });
   });
 
-  mongoose.connect(Settings.mongodb.url, {
+  mongoose.connect(Settings.mongoUrl, {
     auto_reconnect: true,
     useNewUrlParser: true,
   });

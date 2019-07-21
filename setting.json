@@ -4,10 +4,8 @@
   "graphqlUrl": "http://localhost:3010/graphql",
   "wsURI": "ws:localhost:5000/graphql",
   "wsPort": 5000,
-  "mongodb": {
-    "url": "mongodb://localhost:27017/auth-flow"
-  },
+  "mongoUrl": "mongodb://localhost:27017/auth-flow",
   "SECRET": "Big_Fat_Dog",
-  "redis": "redis://:p4ssw0rd@10.0.1.1:6380/15",
+  "redisUrl": "redis://localhost:6379/",
   "tenant":"teatime"
 }

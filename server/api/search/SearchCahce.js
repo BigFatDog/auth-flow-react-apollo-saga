@@ -92,7 +92,6 @@ class SearchCache {
     };
 
     this.test = false;
-    this.mongoUrl = this.mongoUrl + 'SearchCache';
     this.client = redis.createClient(redisOptions);
   }
 
@@ -250,6 +249,7 @@ class SearchCache {
   }
 
   async insertCompletions(array, tenant) {
+    await this.setClients();
     validateInputIsArray(array, 'insertCompletions');
 
     let allPrefixes = [];
