@@ -72,7 +72,7 @@ const dumpCompletions = async function(req, res, next) {
 
   try {
     const data = await import('./sample.json');
-    await SearchCache.invoke(() => SearchCache.insertCompletions(data.default, _id));
+    await SearchCache.insertCompletions(data.default, _id);
   } catch (error) {
     return next(error);
   }

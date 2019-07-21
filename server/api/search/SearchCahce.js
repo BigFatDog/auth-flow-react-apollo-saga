@@ -24,10 +24,9 @@ class SearchCache {
     const opts = SearchCache.parseOpts();
 
     this.redisUrl = opts.redisUrl;
-    this.mongoUrl = MONGO;
     this.client; // for redis client
     this.test; // whether we are using test clients
-    this.mongoClient = mongo.MongoClient;
+    this.mongoClient = null;
     this.maxMemory = opts.maxMemory;
     this.suggestionCount = opts.suggestionCount;
     this.prefixMinChars = opts.prefixMinChars;
@@ -65,7 +64,7 @@ class SearchCache {
       });
   }
 
-  setClients() {
+  async setClients() {
     // don't create new client if not testing and client already exists
     if (!this.test && this.client) {
       return;
@@ -95,6 +94,10 @@ class SearchCache {
 
     this.test = false;
     this.client = redis.createClient(redisOptions);
+
+    if (!this.mongoClient) {
+      this.mongoClient = await mongo.MongoClient.connect(MONGO)
+    }
   }
 
   setTestClients() {
@@ -152,35 +155,24 @@ class SearchCache {
     return promise;
   }
 
-  async connectMongo() {
-    return await this.mongoClient.connect(this.mongoUrl);
-  }
-
   async mongoInsert(prefix, tenant, completions) {
     const args = [{ prefix }, { $set: { completions } }, { upsert: true }];
-    const client = await this.connectMongo();
-    const db = client.db('auth-flow');
-    const col = db.collection(tenant);
+    const col = this.mongoClient.db('auth-flow').collection(tenant);
     col.createIndex({ prefix: 'text' }, { background: true });
-    col.findOneAndUpdate(...args, (err, r) => db.close());
+    col.findOneAndUpdate(...args);
   }
 
   async mongoDelete(prefix, tenant) {
-    const client = await this.connectMongo();
-    const db = client.db('auth-flow');
-    const col = db.collection(tenant);
-    col.findOneAndDelete({ prefix }, (err, r) => client.close());
+    const col = this.mongoClient.db('auth-flow').collection(tenant);
+    col.findOneAndDelete({ prefix });
   }
 
   async mongoFind(prefix, tenant) {
-    const client = await this.connectMongo();
-    const db = client.db('auth-flow');
-    const completions = await db
+    const completions = await this.mongoClient.db('auth-flow')
       .collection(tenant)
       .find({ prefix })
       .limit(1)
       .toArray();
-    client.close();
     if (completions[0]) {
       return completions[0].completions;
     } else {
@@ -260,6 +252,7 @@ class SearchCache {
     let allPrefixes = [];
 
     for (let i = 0; i < array.length; i++) {
+      console.log(i);
       let completion = array[i];
       completion = this.normalizeCompletion(completion);
       const prefixes = this.extractPrefixes(completion);
