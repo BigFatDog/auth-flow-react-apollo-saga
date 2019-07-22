@@ -58,7 +58,9 @@ const getSuggestions = async value => {
     return [];
   }
 
-  const suggestions = await get(`/api/completions/get?prefix=${prefix}&limit=10&scores=true`);
+  const suggestions = await get(
+    `/api/completions/get?prefix=${prefix}&limit=10&scores=true`
+  );
   return suggestions.data;
 };
 
@@ -120,10 +122,12 @@ export default function IntegrationAutosuggest() {
     });
   };
 
-  const onSuggestionSelected = (event, { suggestion, suggestionValue, suggestionIndex, sectionIndex, method }) => {
-    post('/api/completion/increment', { completion: suggestionValue })
-  }
-
+  const onSuggestionSelected = (
+    event,
+    { suggestion, suggestionValue, suggestionIndex, sectionIndex, method }
+  ) => {
+    post('/api/completion/increment', { completion: suggestionValue });
+  };
 
   const autosuggestProps = {
     renderInputComponent,
@@ -132,7 +136,7 @@ export default function IntegrationAutosuggest() {
     onSuggestionsClearRequested: handleSuggestionsClearRequested,
     getSuggestionValue,
     renderSuggestion,
-    onSuggestionSelected
+    onSuggestionSelected,
   };
 
   return (

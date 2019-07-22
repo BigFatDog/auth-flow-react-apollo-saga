@@ -20,7 +20,7 @@ import {
   saveCompletions,
   deleteCompletions,
   incrementCompletion,
-  dumpCompletions
+  dumpCompletions,
 } from './api/search';
 
 import addGraphQLSubscriptions from './middlewares/graphql-subscriptions';

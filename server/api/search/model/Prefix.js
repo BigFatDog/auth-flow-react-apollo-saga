@@ -7,13 +7,11 @@ const createPrefixModel = token => {
     return map[token];
   }
 
-  const PrefixSchema =  new Schema(
-    {
-      _id: String,
-      prefix: String,
-      completions: Array,
-    }
-  );
+  const PrefixSchema = new Schema({
+    _id: String,
+    prefix: String,
+    completions: Array,
+  });
 
   const model = mongoose.model(`${token}`, PrefixSchema);
   map[token] = model;

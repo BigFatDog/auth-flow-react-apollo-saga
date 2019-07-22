@@ -127,7 +127,6 @@ class SearchCache {
     return promise;
   }
 
-
   async mongoFind(prefix, token) {
     const prefixModel = createPrefixModel(token);
     const singleModel = await prefixModel.findOne({ prefix });
@@ -167,7 +166,11 @@ class SearchCache {
       await prefixModel.findOneAndDelete({ prefix });
     } else {
       await prefixModel.createIndexes({ prefix: 'text', background: true });
-      await prefixModel.findOneAndUpdate({ prefix }, { $set: { completions } }, { new: true, upsert: true });
+      await prefixModel.findOneAndUpdate(
+        { prefix },
+        { $set: { completions } },
+        { new: true, upsert: true }
+      );
     }
   }
 
