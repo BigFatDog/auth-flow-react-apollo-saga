@@ -1,10 +1,10 @@
 import redis from 'redis';
-import mongo from 'mongodb';
 import fs from 'fs';
 import path from 'path';
 import JSONStream from 'JSONStream';
 import Writer from './Streamables';
 import bluebird from 'bluebird';
+import createPrefixModel from './model/Prefix';
 
 bluebird.promisifyAll(redis.RedisClient.prototype);
 bluebird.promisifyAll(redis.Multi.prototype);
@@ -17,15 +17,12 @@ const validateInputIsArray = (input, funcName) => {
   }
 };
 
-const MONGO = 'mongodb://localhost:27017/'
-
 class SearchCache {
   constructor() {
     const opts = SearchCache.parseOpts();
 
     this.redisUrl = opts.redisUrl;
     this.client; // for redis client
-    this.mongoClient = null;
     this.maxMemory = opts.maxMemory;
     this.suggestionCount = opts.suggestionCount;
     this.prefixMinChars = opts.prefixMinChars;
@@ -37,7 +34,6 @@ class SearchCache {
   static defaultOpts() {
     return {
       redisUrl: process.env.REDIS_URL,
-      mongoUrl: process.env.MONGODB_URI,
       maxMemory: 500,
       suggestionCount: 5,
       prefixMinChars: 1,
@@ -80,10 +76,6 @@ class SearchCache {
     };
 
     this.client = redis.createClient(redisOptions);
-
-    if (!this.mongoClient) {
-      this.mongoClient = await mongo.MongoClient.connect(MONGO)
-    }
   }
 
   quitRedisClient() {
@@ -135,35 +127,19 @@ class SearchCache {
     return promise;
   }
 
-  async mongoInsert(prefix, tenant, completions) {
-    const args = [{ prefix }, { $set: { completions } }, { upsert: true }];
-    const col = this.mongoClient.db('auth-flow').collection(tenant);
-    col.createIndex({ prefix: 'text' }, { background: true });
-    col.findOneAndUpdate(...args);
+
+  async mongoFind(prefix, token) {
+    const prefixModel = createPrefixModel(token);
+    const singleModel = await prefixModel.findOne({ prefix });
+    return singleModel && singleModel.completions
+      ? singleModel.completions
+      : [];
   }
 
-  async mongoDelete(prefix, tenant) {
-    const col = this.mongoClient.db('auth-flow').collection(tenant);
-    col.findOneAndDelete({ prefix });
-  }
-
-  async mongoFind(prefix, tenant) {
-    const completions = await this.mongoClient.db('auth-flow')
-      .collection(tenant)
-      .find({ prefix })
-      .limit(1)
-      .toArray();
-    if (completions[0]) {
-      return completions[0].completions;
-    } else {
-      return [];
-    }
-  }
-
-  async mongoLoad(prefix, tenant) {
+  async mongoLoad(prefix, token) {
     const commands = [];
-    const completions = await this.mongoFind(prefix, tenant);
-    const prefixWithTenant = this.addTenant(prefix, tenant);
+    const completions = await this.mongoFind(prefix, token);
+    const prefixWithTenant = this.addTenant(prefix, token);
 
     for (var i = 0; i < completions.length; i += 2) {
       commands.push([
@@ -177,8 +153,8 @@ class SearchCache {
     return this.client.batch(commands).execAsync();
   }
 
-  async mongoPersist(prefix, tenant) {
-    const prefixWithTenant = this.addTenant(prefix, tenant);
+  async mongoPersist(prefix, token) {
+    const prefixWithTenant = this.addTenant(prefix, token);
     const completions = await this.client.zrangeAsync(
       prefixWithTenant,
       0,
@@ -186,10 +162,12 @@ class SearchCache {
       'WITHSCORES'
     );
 
+    const prefixModel = createPrefixModel(token);
     if (completions.length === 0) {
-      this.mongoDelete(prefix, tenant);
+      await prefixModel.findOneAndDelete({ prefix });
     } else {
-      this.mongoInsert(prefix, tenant, completions);
+      await prefixModel.createIndexes({ prefix: 'text', background: true });
+      await prefixModel.findOneAndUpdate({ prefix }, { $set: { completions } }, { new: true, upsert: true });
     }
   }
 
@@ -334,10 +312,6 @@ class SearchCache {
       });
   }
 }
-
-process.on('unhandledRejection', (reason, p) => {
-  console.log('Unhandled Rejection at:', p, 'reason:', reason);
-});
 
 const searcher = new SearchCache();
 
