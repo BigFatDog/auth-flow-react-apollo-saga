@@ -10,7 +10,8 @@ const formatCompletionsWithScores = completions => {
 
 const getCompletions = async (req, res, next) => {
   const {
-    query: { prefix, limit, scores, userid },
+    user: { _id },
+    query: { prefix, limit, scores },
   } = req;
   const opts = {
     limit: limit || SearchCache.suggestionCount,
@@ -19,9 +20,7 @@ const getCompletions = async (req, res, next) => {
   let completions;
 
   try {
-    completions = await SearchCache.invoke(() =>
-      SearchCache.search(prefix, userid, opts)
-    );
+    completions = await SearchCache.search(prefix, _id, opts);
   } catch (error) {
     return next(error);
   }
@@ -30,7 +29,7 @@ const getCompletions = async (req, res, next) => {
     completions = formatCompletionsWithScores(completions);
   }
 
-  res.json(completions);
+  res.status(200).json(completions);
 };
 
 const saveCompletions = (req, res, next) => {

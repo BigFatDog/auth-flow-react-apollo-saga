@@ -8,43 +8,7 @@ import Paper from '@material-ui/core/Paper';
 import MenuItem from '@material-ui/core/MenuItem';
 import Popper from '@material-ui/core/Popper';
 import { makeStyles } from '@material-ui/core/styles';
-
-const suggestions = [
-  { label: 'Afghanistan' },
-  { label: 'Aland Islands' },
-  { label: 'Albania' },
-  { label: 'Algeria' },
-  { label: 'American Samoa' },
-  { label: 'Andorra' },
-  { label: 'Angola' },
-  { label: 'Anguilla' },
-  { label: 'Antarctica' },
-  { label: 'Antigua and Barbuda' },
-  { label: 'Argentina' },
-  { label: 'Armenia' },
-  { label: 'Aruba' },
-  { label: 'Australia' },
-  { label: 'Austria' },
-  { label: 'Azerbaijan' },
-  { label: 'Bahamas' },
-  { label: 'Bahrain' },
-  { label: 'Bangladesh' },
-  { label: 'Barbados' },
-  { label: 'Belarus' },
-  { label: 'Belgium' },
-  { label: 'Belize' },
-  { label: 'Benin' },
-  { label: 'Bermuda' },
-  { label: 'Bhutan' },
-  { label: 'Bolivia, Plurinational State of' },
-  { label: 'Bonaire, Sint Eustatius and Saba' },
-  { label: 'Bosnia and Herzegovina' },
-  { label: 'Botswana' },
-  { label: 'Bouvet Island' },
-  { label: 'Brazil' },
-  { label: 'British Indian Ocean Territory' },
-  { label: 'Brunei Darussalam' },
-];
+import { get } from '../../core/http/post';
 
 function renderInputComponent(inputProps) {
   const { classes, inputRef = () => {}, ref, ...other } = inputProps;
@@ -67,8 +31,8 @@ function renderInputComponent(inputProps) {
 }
 
 function renderSuggestion(suggestion, { query, isHighlighted }) {
-  const matches = match(suggestion.label, query);
-  const parts = parse(suggestion.label, matches);
+  const matches = match(suggestion.completion, query);
+  const parts = parse(suggestion.completion, matches);
 
   return (
     <MenuItem selected={isHighlighted} component="div">
@@ -86,28 +50,20 @@ function renderSuggestion(suggestion, { query, isHighlighted }) {
   );
 }
 
-function getSuggestions(value) {
-  const inputValue = deburr(value.trim()).toLowerCase();
-  const inputLength = inputValue.length;
-  let count = 0;
+const getSuggestions = async value => {
+  const prefix = deburr(value.trim()).toLowerCase();
+  const inputLength = prefix.length;
 
-  return inputLength === 0
-    ? []
-    : suggestions.filter(suggestion => {
-        const keep =
-          count < 5 &&
-          suggestion.label.slice(0, inputLength).toLowerCase() === inputValue;
+  if (inputLength === 0) {
+    return [];
+  }
 
-        if (keep) {
-          count += 1;
-        }
-
-        return keep;
-      });
-}
+  const suggestions = await get(`/api/completions/get?prefix=${prefix}&limit=10&scores=true`);
+  return suggestions.data;
+};
 
 function getSuggestionValue(suggestion) {
-  return suggestion.label;
+  return suggestion.completion;
 }
 
 const useStyles = makeStyles(theme => ({
@@ -148,8 +104,9 @@ export default function IntegrationAutosuggest() {
 
   const [stateSuggestions, setSuggestions] = React.useState([]);
 
-  const handleSuggestionsFetchRequested = ({ value }) => {
-    setSuggestions(getSuggestions(value));
+  const handleSuggestionsFetchRequested = async ({ value }) => {
+    const suggestions = await getSuggestions(value);
+    setSuggestions(suggestions);
   };
 
   const handleSuggestionsClearRequested = () => {

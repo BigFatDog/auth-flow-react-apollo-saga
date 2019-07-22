@@ -252,7 +252,6 @@ class SearchCache {
     let allPrefixes = [];
 
     for (let i = 0; i < array.length; i++) {
-      console.log(i);
       let completion = array[i];
       completion = this.normalizeCompletion(completion);
       const prefixes = this.extractPrefixes(completion);
@@ -290,6 +289,8 @@ class SearchCache {
   }
 
   async search(prefixQuery, tenant, opts = {}) {
+    await this.setClients();
+
     const defaultOpts = { limit: this.suggestionCount, withScores: false };
     opts = { ...defaultOpts, ...opts };
     const limit = opts.limit - 1;
