@@ -25,7 +25,6 @@ class SearchCache {
 
     this.redisUrl = opts.redisUrl;
     this.client; // for redis client
-    this.test; // whether we are using test clients
     this.mongoClient = null;
     this.maxMemory = opts.maxMemory;
     this.suggestionCount = opts.suggestionCount;
@@ -52,21 +51,9 @@ class SearchCache {
     return { ...this.defaultOpts(), ...Settings };
   }
 
-  async invoke(cb) {
-    return cb()
-      .then(result => {
-        return result;
-      })
-      .catch(err => {
-        console.log(err.message);
-        err.message = 'Internal Server Error';
-        throw err;
-      });
-  }
-
   async setClients() {
     // don't create new client if not testing and client already exists
-    if (!this.test && this.client) {
+    if (this.client) {
       return;
     }
 
@@ -92,18 +79,11 @@ class SearchCache {
       },
     };
 
-    this.test = false;
     this.client = redis.createClient(redisOptions);
 
     if (!this.mongoClient) {
       this.mongoClient = await mongo.MongoClient.connect(MONGO)
     }
-  }
-
-  setTestClients() {
-    this.test = true;
-    this.mongoUrl = this.mongoUrl + 'test';
-    this.client = redis.createClient({ db: 1 });
   }
 
   quitRedisClient() {

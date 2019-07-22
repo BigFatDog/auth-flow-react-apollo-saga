@@ -34,29 +34,32 @@ const getCompletions = async (req, res, next) => {
 
 const saveCompletions = (req, res, next) => {
   const {
-    body: { completions, userId },
+    user: { _id },
+    body: { completions },
   } = req;
-  SearchCache.invoke(() => SearchCache.insertCompletions(completions, userId));
+  SearchCache.insertCompletions(completions, _id);
   res.sendStatus(202);
 };
 
 const deleteCompletions = (req, res, next) => {
   const {
-    body: { completions, userId },
+    user: { _id },
+    body: { completions },
   } = req;
 
-  SearchCache.invoke(() => SearchCache.deleteCompletions(completions, userId));
+  SearchCache.deleteCompletions(completions, _id);
 
   res.sendStatus(202);
 };
 
 const incrementCompletion = async function(req, res, next) {
   const {
-    body: { completion, userId },
+    user: { _id },
+    body: { completion },
   } = req;
 
   try {
-    await SearchCache.invoke(() => SearchCache.increment(completion, userId));
+    await SearchCache.increment(completion, _id);
   } catch (error) {
     return next(error);
   }

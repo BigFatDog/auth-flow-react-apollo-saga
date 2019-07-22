@@ -8,7 +8,7 @@ import Paper from '@material-ui/core/Paper';
 import MenuItem from '@material-ui/core/MenuItem';
 import Popper from '@material-ui/core/Popper';
 import { makeStyles } from '@material-ui/core/styles';
-import { get } from '../../core/http/post';
+import { get, post } from '../../core/http/post';
 
 function renderInputComponent(inputProps) {
   const { classes, inputRef = () => {}, ref, ...other } = inputProps;
@@ -120,6 +120,11 @@ export default function IntegrationAutosuggest() {
     });
   };
 
+  const onSuggestionSelected = (event, { suggestion, suggestionValue, suggestionIndex, sectionIndex, method }) => {
+    post('/api/completion/increment', { completion: suggestionValue })
+  }
+
+
   const autosuggestProps = {
     renderInputComponent,
     suggestions: stateSuggestions,
@@ -127,6 +132,7 @@ export default function IntegrationAutosuggest() {
     onSuggestionsClearRequested: handleSuggestionsClearRequested,
     getSuggestionValue,
     renderSuggestion,
+    onSuggestionSelected
   };
 
   return (

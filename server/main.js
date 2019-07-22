@@ -68,7 +68,7 @@ app.get('/api/completions/get', getCompletions);
 app.get('/api/completions/dump', dumpCompletions);
 app.post('/api/completions/save', saveCompletions);
 app.post('/api/completions/delete', deleteCompletions);
-app.put('/api/completion/increment', incrementCompletion);
+app.post('/api/completion/increment', incrementCompletion);
 
 // get the intended host and port number, use localhost and port 3000 if not provided
 const customHost = argv.host || process.env.HOST;
