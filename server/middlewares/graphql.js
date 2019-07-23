@@ -3,7 +3,7 @@ import 'isomorphic-fetch';
 import schema from '../api';
 
 const server = new ApolloServer({
-  schema,
+  ...schema,
   debug: true,
   context: ({ req }) => ({ user: req.user }),
   formatError: error => ({

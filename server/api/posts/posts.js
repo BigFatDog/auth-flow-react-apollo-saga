@@ -1,4 +1,6 @@
-const typeDefs = `
+import { gql } from 'apollo-server-express';
+
+const typeDefs = gql`
   type Author {
     id: Int!
     firstName: String
