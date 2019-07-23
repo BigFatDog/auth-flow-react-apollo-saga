@@ -1,10 +1,10 @@
 import { Writable } from 'stream';
 
 class Writer extends Writable {
-  constructor(SearchCache, tenant, options = { objectMode: true }) {
+  constructor(insertCompletions, token, options = { objectMode: true }) {
     super(options);
-    this.SearchCache = SearchCache;
-    this.tenant = tenant;
+    this.insertCompletions = insertCompletions;
+    this.token = token;
   }
 
   static logMemory(task) {
@@ -19,7 +19,7 @@ class Writer extends Writable {
     console.log('Writing to redis, please wait...');
     Writer.logMemory('This import');
 
-    this.SearchCache.insertCompletions([item], this.tenant)
+    this.insertCompletions([item], this.token)
       .then(() => callback())
       .catch(callback);
   }

@@ -6,6 +6,8 @@ import ngrokTunnel from 'ngrok';
 import logger from './logger';
 import argv from './argv';
 import port from './port';
+import redis from 'redis';
+import bluebird from 'bluebird';
 import setting from '../setting.json';
 
 import tokenMiddleware from './middlewares/token-middleware';
@@ -22,15 +24,42 @@ import {
   incrementCompletion,
   dumpCompletions,
 } from './api/search';
+import initSearcher from './api/search/SearchCahce';
 
 import addGraphQLSubscriptions from './middlewares/graphql-subscriptions';
 import startMongo from './database/mongo';
 
 import websiteProdMiddleware from './middlewares/website-prod';
 
+bluebird.promisifyAll(redis.RedisClient.prototype);
+bluebird.promisifyAll(redis.Multi.prototype);
+
 const isDev = process.env.NODE_ENV !== 'production';
 const ngrok =
   (isDev && process.env.ENABLE_TUNNEL) || argv.tunnel ? ngrokTunnel : false;
+
+const redisClient = redis.createClient({
+  url: setting.redisUrl,
+  retry_strategy: function(options) {
+    if (options.error && options.error.code === 'ECONNREFUSED') {
+      // End reconnecting on a specific error and flush all commands with
+      // a individual error
+      return new Error('The server refused the connection');
+    }
+    if (options.total_retry_time > 1000 * 60 * 60) {
+      // End reconnecting after a specific timeout and flush all commands
+      // with a individual error
+      return new Error('Retry time exhausted');
+    }
+    if (options.attempt > 10) {
+      // End reconnecting with built in error
+      return undefined;
+    }
+    // reconnect after
+    return Math.min(options.attempt * 100, 3000);
+  },
+});
+const searcher = initSearcher(redisClient);
 
 const app = express();
 
@@ -64,11 +93,11 @@ app.use('/', express.static('public', { etag: false }));
 
 app.use('/api', tokenMiddleware(setting.SECRET));
 
-app.get('/api/completions/get', getCompletions);
-app.get('/api/completions/dump', dumpCompletions);
-app.post('/api/completions/save', saveCompletions);
-app.post('/api/completions/delete', deleteCompletions);
-app.post('/api/completion/increment', incrementCompletion);
+app.get('/api/completions/get', getCompletions(searcher));
+app.get('/api/completions/dump', dumpCompletions(searcher));
+app.post('/api/completions/save', saveCompletions(searcher));
+app.post('/api/completions/delete', deleteCompletions(searcher));
+app.post('/api/completion/increment', incrementCompletion(searcher));
 
 // get the intended host and port number, use localhost and port 3000 if not provided
 const customHost = argv.host || process.env.HOST;

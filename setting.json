@@ -6,6 +6,5 @@
   "wsPort": 5000,
   "mongoUrl": "mongodb://localhost:27017/auth-flow",
   "SECRET": "Big_Fat_Dog",
-  "redisUrl": "redis://localhost:6379/",
-  "tenant":"teatime"
+  "redisUrl": "redis://localhost:6379/"
 }
