@@ -17,6 +17,33 @@ const validateInputIsArray = (input, funcName) => {
   }
 };
 
+// remove instances of more than one whitespace
+const normalizeCompletion = (completionMaxChars, originalCompletions) =>
+  originalCompletions
+    .slice(0, completionMaxChars)
+    .toLowerCase()
+    .trim()
+    .replace(/\s{2,}/g, ' ');
+
+// remove instances of more than one whitespace
+const normalizePrefix = (prefixMaxChars, originalQuery) =>
+  originalQuery
+    .slice(0, prefixMaxChars)
+    .toLowerCase()
+    .replace(/\s{2,}/g, ' ');
+
+const extractPrefixes = (prefixMaxChars, prefixMinChars, completion) => {
+  const normalized = normalizePrefix(prefixMaxChars, completion);
+
+  const prefixes = [];
+  for (let i = prefixMinChars; i <= normalized.length; i++) {
+    prefixes.push(normalized.slice(0, i));
+  }
+  return prefixes;
+};
+
+const toFullPrefix = (prefix, token) => `${token}:${prefix}`;
+
 class SearchCache {
   constructor() {
     const opts = SearchCache.parseOpts();
@@ -82,36 +109,6 @@ class SearchCache {
     this.client.quit();
   }
 
-  normalizePrefix(string) {
-    string = string.slice(0, this.prefixMaxChars);
-    string = string.toLowerCase();
-    string = string.replace(/\s{2,}/g, ' '); // remove instances of more than one whitespace
-    return string;
-  }
-
-  normalizeCompletion(string) {
-    string = string.slice(0, this.completionMaxChars);
-    string = string.toLowerCase();
-    string = string.trim();
-    string = string.replace(/\s{2,}/g, ' '); // remove instances of more than one whitespace
-    return string;
-  }
-
-  extractPrefixes(completion) {
-    completion = this.normalizePrefix(completion);
-
-    const start = this.prefixMinChars;
-    const prefixes = [];
-    for (let i = start; i <= completion.length; i++) {
-      prefixes.push(completion.slice(0, i));
-    }
-    return prefixes;
-  }
-
-  addTenant(prefix, tenant) {
-    return tenant + ':' + prefix;
-  }
-
   importFile(filePath, tenant) {
     const json = fs.createReadStream(
       path.resolve(process.cwd(), filePath),
@@ -138,7 +135,7 @@ class SearchCache {
   async mongoLoad(prefix, token) {
     const commands = [];
     const completions = await this.mongoFind(prefix, token);
-    const prefixWithTenant = this.addTenant(prefix, token);
+    const prefixWithTenant = toFullPrefix(prefix, token);
 
     for (var i = 0; i < completions.length; i += 2) {
       commands.push([
@@ -153,7 +150,7 @@ class SearchCache {
   }
 
   async mongoPersist(prefix, token) {
-    const prefixWithTenant = this.addTenant(prefix, token);
+    const prefixWithTenant = toFullPrefix(prefix, token);
     const completions = await this.client.zrangeAsync(
       prefixWithTenant,
       0,
@@ -193,7 +190,7 @@ class SearchCache {
 
   async insertCompletion(prefixes, tenant, completion) {
     for (let i = 0; i < prefixes.length; i++) {
-      let prefixWithTenant = this.addTenant(prefixes[i], tenant);
+      let prefixWithTenant = toFullPrefix(prefixes[i], tenant);
       const count = await this.getCompletionsCount(
         prefixes[i],
         tenant,
@@ -213,9 +210,8 @@ class SearchCache {
     let allPrefixes = [];
 
     for (let i = 0; i < array.length; i++) {
-      let completion = array[i];
-      completion = this.normalizeCompletion(completion);
-      const prefixes = this.extractPrefixes(completion);
+      const completion = normalizeCompletion(this.completionMaxChars, array[i]);
+      const prefixes = extractPrefixes(this.prefixMaxChars, this.prefixMinChars, completion);
 
       allPrefixes = [...allPrefixes, ...prefixes];
       await this.insertCompletion(prefixes, tenant, completion);
@@ -230,13 +226,13 @@ class SearchCache {
     let allPrefixes = [];
     const commands = [];
     completions.forEach(completion => {
-      completion = this.normalizeCompletion(completion);
-      const prefixes = this.extractPrefixes(completion);
+      const normalized = normalizeCompletion(this.completionMaxChars, completion);
+      const prefixes = extractPrefixes(this.prefixMaxChars, this.prefixMinChars, normalized);
       allPrefixes = [...allPrefixes, ...prefixes];
 
       prefixes.forEach(prefix => {
-        const prefixWithTenant = this.addTenant(prefix, tenant);
-        commands.push(['zrem', prefixWithTenant, completion]);
+        const prefixWithTenant = toFullPrefix(prefix, tenant);
+        commands.push(['zrem', prefixWithTenant, normalized]);
       }, this);
     });
 
@@ -255,8 +251,8 @@ class SearchCache {
     const defaultOpts = { limit: this.suggestionCount, withScores: false };
     opts = { ...defaultOpts, ...opts };
     const limit = opts.limit - 1;
-    const prefix = this.normalizePrefix(prefixQuery);
-    const prefixWithTenant = this.addTenant(prefix, tenant);
+    const prefix = normalizePrefix(this.prefixMaxChars, prefixQuery);
+    const prefixWithTenant = toFullPrefix(prefix, tenant);
 
     let args = [prefixWithTenant, 0, limit];
     if (opts.withScores) args = args.concat('WITHSCORES');
@@ -272,13 +268,13 @@ class SearchCache {
   }
 
   async increment(completion, tenant) {
-    completion = this.normalizeCompletion(completion);
-    const prefixes = this.extractPrefixes(completion);
+    completion = normalizeCompletion(this.completionMaxChars, completion);
+    const prefixes = extractPrefixes(this.prefixMaxChars, this.prefixMinChars, completion);
     const commands = [];
     const limit = this.bucketLimit;
 
     for (let i = 0; i < prefixes.length; i++) {
-      let prefixWithTenant = this.addTenant(prefixes[i], tenant);
+      let prefixWithTenant = toFullPrefix(prefixes[i], tenant);
       let count = await this.getCompletionsCount(
         prefixes[i],
         tenant,
