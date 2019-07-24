@@ -23,7 +23,7 @@ import {
   deleteCompletions,
   incrementCompletion,
   dumpCompletions,
-} from './api/search';
+} from './api/search/restApi';
 import initSearcher from './api/search/SearchCahce';
 
 import addGraphQLSubscriptions from './middlewares/graphql-subscriptions';

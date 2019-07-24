@@ -1,89 +1,35 @@
-import _ from 'lodash';
+import apiDeleteCompletions from './api/deleteCompletions';
+import dumpFile from './api/dumpFile';
+import apiIncrement from './api/increment';
+import apiInsertCompletions from './api/insertCompletions';
+import apiSearch from './api/search';
 
-const formatCompletionsWithScores = completions =>
-  _.chunk(completions, 2).map(completion => ({
-    completion: completion[0],
-    score: completion[1],
-  }));
+const DefaultConfig = {
+  maxMemory: 500,
+  suggestionCount: 10,
+  prefixMinChars: 1,
+  prefixMaxChars: 15,
+  completionMaxChars: 50,
+  bucketLimit: 50,
+};
 
-const getCompletions = instance => async (req, res, next) => {
-  const {
-    user: { _id },
-    query: { prefix, limit, scores },
-  } = req;
-  const opts = {
-    limit: limit || instance.config.suggestionCount,
-    withScores: scores === 'true' || false,
+const init = (redisClient, config = DefaultConfig) => {
+  const initConfig = {
+    redisClient,
+    config,
   };
-  let completions;
 
-  try {
-    completions = await instance.search(prefix, _id, opts);
-  } catch (error) {
-    return next(error);
-  }
-
-  if (opts.withScores) {
-    completions = formatCompletionsWithScores(completions);
-  }
-
-  res.status(200).json(completions);
+  return Object.assign(
+    {},
+    initConfig,
+    { insertCompletions: apiInsertCompletions(initConfig) },
+    {
+      deleteCompletions: apiDeleteCompletions(initConfig),
+    },
+    { search: apiSearch(initConfig) },
+    { increment: apiIncrement(initConfig) },
+    { dumpFile: dumpFile(initConfig) }
+  );
 };
 
-const saveCompletions = instance => (req, res, next) => {
-  const {
-    user: { _id },
-    body: { completions },
-  } = req;
-  instance.insertCompletions(completions, _id);
-  res.sendStatus(202);
-};
-
-const deleteCompletions = instance => (req, res, next) => {
-  const {
-    user: { _id },
-    body: { completions },
-  } = req;
-
-  instance.deleteCompletions(completions, _id);
-
-  res.sendStatus(202);
-};
-
-const incrementCompletion = instance => async (req, res, next) => {
-  const {
-    user: { _id },
-    body: { completion },
-  } = req;
-
-  try {
-    await instance.increment(completion, _id);
-  } catch (error) {
-    return next(error);
-  }
-
-  res.sendStatus(204);
-};
-
-const dumpCompletions = instance => async (req, res, next) => {
-  const {
-    user: { _id },
-  } = req;
-
-  try {
-    const data = await import('./sample.json');
-    await instance.insertCompletions(data.default, _id);
-  } catch (error) {
-    return next(error);
-  }
-
-  res.sendStatus(204);
-};
-
-export {
-  getCompletions,
-  saveCompletions,
-  deleteCompletions,
-  incrementCompletion,
-  dumpCompletions,
-};
+export default init;
