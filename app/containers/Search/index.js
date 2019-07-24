@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import deburr from 'lodash/deburr';
 import Autosuggest from 'react-autosuggest';
 import match from 'autosuggest-highlight/match';
@@ -8,6 +8,20 @@ import Paper from '@material-ui/core/Paper';
 import MenuItem from '@material-ui/core/MenuItem';
 import Popper from '@material-ui/core/Popper';
 import { makeStyles } from '@material-ui/core/styles';
+import {
+  fromEvent,
+  from,
+} from 'rxjs';
+import {
+  map,
+  filter,
+  distinctUntilChanged,
+  debounceTime,
+  switchMap,
+} from 'rxjs/operators';
+
+
+
 import { get, post } from '../../core/http/post';
 
 function renderInputComponent(inputProps) {
@@ -98,13 +112,42 @@ const useStyles = makeStyles(theme => ({
 
 export default function IntegrationAutosuggest() {
   const classes = useStyles();
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const [state, setState] = React.useState({
+  const [stateSuggestions, setSuggestions] = React.useState([]);
+  const [state, setState] = useState({
     single: '',
     popper: '',
   });
 
-  const [stateSuggestions, setSuggestions] = React.useState([]);
+  useEffect(() => {
+    let searchBox = document.getElementById('search');
+    let results = document.getElementById('results');
+    let searchGithub = (query) =>
+      fetch(`https://api.github.com/search/users?q=${query}`)
+        .then(data => data.json());
+
+    let input$ = fromEvent(searchBox, 'input')
+      .pipe(
+        map(e => e.target.value),
+        debounceTime(250),
+        filter(query => query.length >= 2 || query.length === 0),
+        distinctUntilChanged(),
+        switchMap(value => value ?
+          from(searchGithub(value)) : from(Promise.resolve({items: []}))
+        )
+      );
+
+    input$.subscribe(data =>  {
+      while (results.firstChild) {
+        results.removeChild(results.firstChild);
+      }
+      data.items.map(user => {
+        let newResult = document.createElement('li');
+        newResult.textContent = user.login;
+        results.appendChild(newResult);
+      });
+    });
+  }, [])
+
 
   const handleSuggestionsFetchRequested = async ({ value }) => {
     const suggestions = await getSuggestions(value);
@@ -115,12 +158,6 @@ export default function IntegrationAutosuggest() {
     setSuggestions([]);
   };
 
-  const handleChange = name => (event, { newValue }) => {
-    setState({
-      ...state,
-      [name]: newValue,
-    });
-  };
 
   const onSuggestionSelected = (
     event,
@@ -128,6 +165,14 @@ export default function IntegrationAutosuggest() {
   ) => {
     post('/api/completion/increment', { completion: suggestionValue });
   };
+
+  const handleChange = name => (event, { newValue }) => {
+    setState({
+      ...state,
+      [name]: newValue,
+    });
+  };
+
 
   const autosuggestProps = {
     renderInputComponent,
@@ -164,38 +209,10 @@ export default function IntegrationAutosuggest() {
         )}
       />
       <div className={classes.divider} />
-      <Autosuggest
-        {...autosuggestProps}
-        inputProps={{
-          classes,
-          id: 'react-autosuggest-popper',
-          label: 'Country',
-          placeholder: 'With Popper',
-          value: state.popper,
-          onChange: handleChange('popper'),
-          inputRef: node => {
-            setAnchorEl(node);
-          },
-          InputLabelProps: {
-            shrink: true,
-          },
-        }}
-        theme={{
-          suggestionsList: classes.suggestionsList,
-          suggestion: classes.suggestion,
-        }}
-        renderSuggestionsContainer={options => (
-          <Popper anchorEl={anchorEl} open={Boolean(options.children)}>
-            <Paper
-              square
-              {...options.containerProps}
-              style={{ width: anchorEl ? anchorEl.clientWidth : undefined }}
-            >
-              {options.children}
-            </Paper>
-          </Popper>
-        )}
-      />
+      <input type="text" name="search" id="search"/>
+
+      <ul id="results">
+      </ul>
     </div>
   );
 }

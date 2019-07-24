@@ -1,7 +1,6 @@
 import React, { memo } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { Query } from 'react-apollo';
-import 'parcoord-es/dist/parcoords.css';
 import messages from './messages';
 
 import PostListQuery from './Posts.graphql';
