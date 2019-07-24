@@ -108,10 +108,7 @@ const useStyles = makeStyles(theme => ({
 export default function IntegrationAutosuggest() {
   const classes = useStyles();
   const [stateSuggestions, setSuggestions] = React.useState([]);
-  const [state, setState] = useState({
-    single: '',
-    popper: '',
-  });
+  const [value, setValue] = useState('');
 
   useEffect(() => {
     let searchBox = document.getElementById('search');
@@ -159,13 +156,6 @@ export default function IntegrationAutosuggest() {
     post('/api/completion/increment', { completion: suggestionValue });
   };
 
-  const handleChange = name => (event, { newValue }) => {
-    setState({
-      ...state,
-      [name]: newValue,
-    });
-  };
-
   const autosuggestProps = {
     renderInputComponent,
     suggestions: stateSuggestions,
@@ -185,8 +175,8 @@ export default function IntegrationAutosuggest() {
           id: 'react-autosuggest-simple',
           label: 'Country',
           placeholder: 'Search a country (start with a)',
-          value: state.single,
-          onChange: handleChange('single'),
+          value,
+          onChange: (evt, { newValue} ) => setValue(newValue),
         }}
         theme={{
           container: classes.container,
