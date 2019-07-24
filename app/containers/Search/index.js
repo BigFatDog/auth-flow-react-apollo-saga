@@ -8,10 +8,7 @@ import Paper from '@material-ui/core/Paper';
 import MenuItem from '@material-ui/core/MenuItem';
 import Popper from '@material-ui/core/Popper';
 import { makeStyles } from '@material-ui/core/styles';
-import {
-  fromEvent,
-  from,
-} from 'rxjs';
+import { fromEvent, from } from 'rxjs';
 import {
   map,
   filter,
@@ -19,8 +16,6 @@ import {
   debounceTime,
   switchMap,
 } from 'rxjs/operators';
-
-
 
 import { get, post } from '../../core/http/post';
 
@@ -121,22 +116,22 @@ export default function IntegrationAutosuggest() {
   useEffect(() => {
     let searchBox = document.getElementById('search');
     let results = document.getElementById('results');
-    let searchGithub = (query) =>
-      fetch(`https://api.github.com/search/users?q=${query}`)
-        .then(data => data.json());
-
-    let input$ = fromEvent(searchBox, 'input')
-      .pipe(
-        map(e => e.target.value),
-        debounceTime(250),
-        filter(query => query.length >= 2 || query.length === 0),
-        distinctUntilChanged(),
-        switchMap(value => value ?
-          from(searchGithub(value)) : from(Promise.resolve({items: []}))
-        )
+    let searchGithub = query =>
+      fetch(`https://api.github.com/search/users?q=${query}`).then(data =>
+        data.json()
       );
 
-    input$.subscribe(data =>  {
+    let input$ = fromEvent(searchBox, 'input').pipe(
+      map(e => e.target.value),
+      debounceTime(250),
+      filter(query => query.length >= 2 || query.length === 0),
+      distinctUntilChanged(),
+      switchMap(value =>
+        value ? from(searchGithub(value)) : from(Promise.resolve({ items: [] }))
+      )
+    );
+
+    input$.subscribe(data => {
       while (results.firstChild) {
         results.removeChild(results.firstChild);
       }
@@ -146,8 +141,7 @@ export default function IntegrationAutosuggest() {
         results.appendChild(newResult);
       });
     });
-  }, [])
-
+  }, []);
 
   const handleSuggestionsFetchRequested = async ({ value }) => {
     const suggestions = await getSuggestions(value);
@@ -157,7 +151,6 @@ export default function IntegrationAutosuggest() {
   const handleSuggestionsClearRequested = () => {
     setSuggestions([]);
   };
-
 
   const onSuggestionSelected = (
     event,
@@ -172,7 +165,6 @@ export default function IntegrationAutosuggest() {
       [name]: newValue,
     });
   };
-
 
   const autosuggestProps = {
     renderInputComponent,
@@ -209,10 +201,9 @@ export default function IntegrationAutosuggest() {
         )}
       />
       <div className={classes.divider} />
-      <input type="text" name="search" id="search"/>
+      <input type="text" name="search" id="search" />
 
-      <ul id="results">
-      </ul>
+      <ul id="results"></ul>
     </div>
   );
 }

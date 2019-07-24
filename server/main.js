@@ -24,7 +24,7 @@ import {
   incrementCompletion,
   dumpCompletions,
 } from './api/search/restApi';
-import initSearcher from './api/search/SearchCahce';
+import initSearcher from './api/search';
 
 import addGraphQLSubscriptions from './middlewares/graphql-subscriptions';
 import startMongo from './database/mongo';
