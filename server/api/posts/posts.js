@@ -23,9 +23,7 @@ const typeDefs = gql`
 
   # this schema allows the following mutation:
   type Mutation {
-    upvotePost (
-      postId: Int!
-    ): Post
+    upvotePost(postId: Int!): Post
   }
 
   type Subscription {

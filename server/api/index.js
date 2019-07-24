@@ -11,5 +11,4 @@ const apiSchema = {
   resolverValidationOptions: { requireResolversForAllFields: false },
 };
 
-
 export default apiSchema;

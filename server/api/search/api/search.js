@@ -1,0 +1,27 @@
+import { normalizePrefix, toFullPrefix } from '../utils/prefixUtils';
+import { syncRedisWithMongo } from '../utils/redisUtils';
+
+const apiSearch = instance => async (prefixQuery, token, opts = {}) => {
+  const {
+    redisClient,
+    config: { suggestionCount, prefixMaxChars },
+  } = instance;
+  const prefix = normalizePrefix(prefixMaxChars, prefixQuery);
+  const prefixWithTenant = toFullPrefix(prefix, token);
+
+  const result = await redisClient.zrangeAsync(
+    prefixWithTenant,
+    0,
+    suggestionCount - 1,
+    'WITHSCORES'
+  );
+
+  if (result.length === 0) {
+    await syncRedisWithMongo(redisClient, prefix, token);
+    return await redisClient.zrangeAsync(...args);
+  } else {
+    return result;
+  }
+};
+
+export default apiSearch;
