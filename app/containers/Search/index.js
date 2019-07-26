@@ -1,13 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import deburr from 'lodash/deburr';
-import Autosuggest from 'react-autosuggest';
-import match from 'autosuggest-highlight/match';
-import parse from 'autosuggest-highlight/parse';
-import TextField from '@material-ui/core/TextField';
-import Paper from '@material-ui/core/Paper';
-import MenuItem from '@material-ui/core/MenuItem';
-import Popper from '@material-ui/core/Popper';
+import React, { useEffect, useRef, useState } from 'react';
+import { fade, darken } from '@material-ui/core/styles/colorManipulator';
 import { makeStyles } from '@material-ui/core/styles';
+import SearchIcon from '@material-ui/icons/Search';
+import HistoryIcon from '@material-ui/icons/History';
+import IconButton from '@material-ui/core/IconButton';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import TextField from '@material-ui/core/TextField';
+import InputAdornment from '@material-ui/core/InputAdornment';
+import ListItemText from '@material-ui/core/ListItemText';
+import Paper from '@material-ui/core/Paper';
+import InputBase from '@material-ui/core/InputBase';
+import Divider from '@material-ui/core/Divider';
+import MenuIcon from '@material-ui/icons/Menu';
+import DirectionsIcon from '@material-ui/icons/Directions';
 import { fromEvent, from } from 'rxjs';
 import {
   map,
@@ -19,181 +26,116 @@ import {
 
 import { get, post } from '../../core/http/post';
 
-function renderInputComponent(inputProps) {
-  const { classes, inputRef = () => {}, ref, ...other } = inputProps;
-
-  return (
-    <TextField
-      fullWidth
-      InputProps={{
-        inputRef: node => {
-          ref(node);
-          inputRef(node);
-        },
-        classes: {
-          input: classes.input,
-        },
-      }}
-      {...other}
-    />
-  );
-}
-
-function renderSuggestion(suggestion, { query, isHighlighted }) {
-  const matches = match(suggestion.completion, query);
-  const parts = parse(suggestion.completion, matches);
-
-  return (
-    <MenuItem selected={isHighlighted} component="div">
-      <div>
-        {parts.map(part => (
-          <span
-            key={part.text}
-            style={{ fontWeight: part.highlight ? 500 : 400 }}
-          >
-            {part.text}
-          </span>
-        ))}
-      </div>
-    </MenuItem>
-  );
-}
-
-const getSuggestions = async value => {
-  const prefix = deburr(value.trim()).toLowerCase();
-  const inputLength = prefix.length;
-
-  if (inputLength === 0) {
-    return [];
-  }
-
-  const suggestions = await get(
-    `/api/completions/get?prefix=${prefix}&limit=10&scores=true`
-  );
-  return suggestions.data;
-};
-
-function getSuggestionValue(suggestion) {
-  return suggestion.completion;
-}
-
 const useStyles = makeStyles(theme => ({
   root: {
-    height: 250,
-    flexGrow: 1,
+    marginTop: theme.spacing(8),
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
   },
-  container: {
-    position: 'relative',
+  searchContainer: {
+    padding: '2px 4px',
+    display: 'flex',
+    alignItems: 'center',
+    width: 600,
   },
-  suggestionsContainerOpen: {
-    position: 'absolute',
-    zIndex: 1,
-    marginTop: theme.spacing(1),
-    left: 0,
-    right: 0,
+  resultContainer: {
+    alignItems: 'center',
+    width: 600,
   },
-  suggestion: {
-    display: 'block',
+
+  suggestionItem: {
+    borderBottom: '1px #AAAAAA solid',
   },
-  suggestionsList: {
-    margin: 0,
-    padding: 0,
-    listStyleType: 'none',
+  input: {
+    marginLeft: 8,
+    flex: 1,
+  },
+  iconButton: {
+    padding: 10,
   },
   divider: {
-    height: theme.spacing(2),
+    width: 1,
+    height: 28,
+    margin: 4,
   },
 }));
 
-export default function IntegrationAutosuggest() {
+const Search = props => {
   const classes = useStyles();
-  const [stateSuggestions, setSuggestions] = React.useState([]);
-  const [value, setValue] = useState('');
+  const searchRef = useRef(null);
+  const [suggestions, setSuggestions] = useState([]);
 
   useEffect(() => {
-    let searchBox = document.getElementById('search');
-    let results = document.getElementById('results');
-    let searchGithub = query =>
-      fetch(`https://api.github.com/search/users?q=${query}`).then(data =>
-        data.json()
+    if (searchRef !== null) {
+      const searchBox = document.getElementById('search');
+      const searchBackend = prefix =>
+        get(`/api/completions/get?prefix=${prefix}&limit=10&scores=true`).then(
+          res => res.data
+        );
+
+      const input$ = fromEvent(searchBox, 'input').pipe(
+        map(e => e.target.value),
+        debounceTime(250),
+        filter(
+          query =>
+            (query.length >= 1 && query.length <= 10) || query.length === 0
+        ),
+        distinctUntilChanged(),
+        switchMap(value =>
+          value
+            ? from(searchBackend(value))
+            : from(Promise.resolve({ items: [] }))
+        )
       );
 
-    let input$ = fromEvent(searchBox, 'input').pipe(
-      map(e => e.target.value),
-      debounceTime(250),
-      filter(query => query.length >= 2 || query.length === 0),
-      distinctUntilChanged(),
-      switchMap(value =>
-        value ? from(searchGithub(value)) : from(Promise.resolve({ items: [] }))
-      )
-    );
-
-    input$.subscribe(data => {
-      while (results.firstChild) {
-        results.removeChild(results.firstChild);
-      }
-      data.items.map(user => {
-        let newResult = document.createElement('li');
-        newResult.textContent = user.login;
-        results.appendChild(newResult);
+      input$.subscribe(data => {
+        setSuggestions(data);
       });
-    });
-  }, []);
-
-  const handleSuggestionsFetchRequested = async ({ value }) => {
-    const suggestions = await getSuggestions(value);
-    setSuggestions(suggestions);
-  };
-
-  const handleSuggestionsClearRequested = () => {
-    setSuggestions([]);
-  };
-
-  const onSuggestionSelected = (
-    event,
-    { suggestion, suggestionValue, suggestionIndex, sectionIndex, method }
-  ) => {
-    post('/api/completion/increment', { completion: suggestionValue });
-  };
-
-  const autosuggestProps = {
-    renderInputComponent,
-    suggestions: stateSuggestions,
-    onSuggestionsFetchRequested: handleSuggestionsFetchRequested,
-    onSuggestionsClearRequested: handleSuggestionsClearRequested,
-    getSuggestionValue,
-    renderSuggestion,
-    onSuggestionSelected,
-  };
+    }
+  }, [searchRef]);
 
   return (
     <div className={classes.root}>
-      <Autosuggest
-        {...autosuggestProps}
-        inputProps={{
-          classes,
-          id: 'react-autosuggest-simple',
-          label: 'Country',
-          placeholder: 'Search a country (start with a)',
-          value,
-          onChange: (evt, { newValue} ) => setValue(newValue),
-        }}
-        theme={{
-          container: classes.container,
-          suggestionsContainerOpen: classes.suggestionsContainerOpen,
-          suggestionsList: classes.suggestionsList,
-          suggestion: classes.suggestion,
-        }}
-        renderSuggestionsContainer={options => (
-          <Paper {...options.containerProps} square>
-            {options.children}
-          </Paper>
-        )}
-      />
-      <div className={classes.divider} />
-      <input type="text" name="search" id="search" />
-
-      <ul id="results"></ul>
+      <Paper className={classes.searchContainer}>
+        <InputBase
+          id={'search'}
+          ref={searchRef}
+          autoComplete={'off'}
+          className={classes.input}
+          placeholder="Search Google Maps"
+          inputProps={{ 'aria-label': 'search google maps' }}
+        />
+        <IconButton className={classes.iconButton} aria-label="search">
+          <SearchIcon />
+        </IconButton>
+        <Divider className={classes.divider} />
+        <IconButton
+          color="primary"
+          className={classes.iconButton}
+          aria-label="directions"
+        >
+          <DirectionsIcon />
+        </IconButton>
+      </Paper>
+      <Paper className={classes.resultContainer}>
+        {suggestions.map(d => {
+          return (
+            <ListItem
+              className={classes.suggestionItem}
+              key={d.completion}
+              button
+            >
+              <ListItemIcon>
+                <HistoryIcon />
+              </ListItemIcon>
+              <ListItemText primary={d.completion} secondary={d.score} />
+            </ListItem>
+          );
+        })}
+      </Paper>
     </div>
   );
-}
+};
+
+export default Search;
