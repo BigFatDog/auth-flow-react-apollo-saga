@@ -9,7 +9,8 @@ const apiSearch = instance => async (prefixQuery, token, opts = {}) => {
   const prefix = normalizePrefix(prefixMaxChars, prefixQuery);
   const prefixWithTenant = toFullPrefix(prefix, token);
 
-  const args = [prefixWithTenant, 0, suggestionCount - 1, 'WITHSCORES'];
+  const limit = opts.limit || suggestionCount;
+  const args = [prefixWithTenant, 0, limit - 1, 'WITHSCORES'];
   const result = await redisClient.zrangeAsync(...args);
 
   if (result.length === 0) {
