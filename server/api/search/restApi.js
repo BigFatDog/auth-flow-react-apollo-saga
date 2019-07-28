@@ -1,16 +1,17 @@
 const getCompletions = instance => async (req, res, next) => {
   const {
-    user: { _id },
     query: { prefix, limit, scores },
   } = req;
-  const opts = {
-    limit: limit || instance.config.suggestionCount,
-    withScores: scores === 'true' || false,
-  };
+
   let completions = [];
 
   try {
-    completions = await instance.search(prefix, _id, opts);
+    completions = await instance.search({
+      prefixQuery: prefix,
+      token: req.user && req.user._id ? req.user._id : null,
+      limit: limit || instance.config.suggestionCount,
+      withScores: scores === 'true' || false,
+    });
   } catch (error) {
     return next(error);
   }

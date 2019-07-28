@@ -25,29 +25,43 @@ const syncRedisWithMongo = async (redisClient, prefix) => {
   return redisClient.batch(commands).execAsync();
 };
 
-const apiSearch = instance => async (prefixQuery, token, opts = {}) => {
-  const {
-    redisClient,
-    config: { suggestionCount, prefixMaxChars },
-  } = instance;
-  const prefix = normalizePrefix(prefixMaxChars, prefixQuery);
+const getPersonalizedRes = async (redisClient, prefix, token) => {
+  if (!token) {
+    return [];
+  }
   const prefixWithTenant = toFullPrefix(prefix, token);
 
-  const limit = opts.limit || suggestionCount;
   const personalizedResult = await redisClient.zrangeAsync(
     prefixWithTenant,
     0,
     1,
     'WITHSCORES'
   );
-  const args = [prefix, 0, limit - 1, 'WITHSCORES'];
 
-  const formattedPersonal = formatCompletionsWithScores(personalizedResult).map(
-    d => {
-      d.type = 'personalized';
-      return d;
-    }
+  return formatCompletionsWithScores(personalizedResult).map(d => {
+    d.type = 'personalized';
+    return d;
+  });
+};
+
+const apiSearch = instance => async ({
+  token = null,
+  limit = 10,
+  prefixQuery,
+}) => {
+  const {
+    redisClient,
+    config: { prefixMaxChars },
+  } = instance;
+  const prefix = normalizePrefix(prefixMaxChars, prefixQuery);
+
+  const formattedPersonal = await getPersonalizedRes(
+    redisClient,
+    prefix,
+    token
   );
+
+  const args = [prefix, 0, limit - 1, 'WITHSCORES'];
   let commonResult = await redisClient.zrangeAsync(...args);
 
   if (commonResult.length === 0) {
