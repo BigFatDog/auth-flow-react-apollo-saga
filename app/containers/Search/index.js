@@ -63,7 +63,7 @@ const Search = props => {
       });
 
       // re-fetch suggestions when user clicks on input
-      const focus$ =  fromEvent(searchBox, 'focus').pipe(
+      const focus$ = fromEvent(searchBox, 'focus').pipe(
         map(e => e.target.value),
         debounceTime(250),
         switchMap(value => from(searchBackend(value)))
