@@ -36,4 +36,4 @@ const persistPrefixes = async (redisClient, prefixes, token = null) => {
   }
 };
 
-export { persistPrefixes };
+export { persistPrefixes, persistPrefix };

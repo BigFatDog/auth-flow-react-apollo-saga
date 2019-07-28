@@ -4,8 +4,17 @@ import {
   toFullPrefix,
   validateInputIsArray,
 } from '../utils/prefixUtils';
-import { persistPrefixes } from '../utils/redisUtils';
-import { BASE_DOC_NAME } from '../constants';
+import { persistPrefix } from '../utils/redisUtils';
+
+const removePersonalizedInMongo = async (redisClient, prefixes, token) => {
+  for (let i = 0; i < prefixes.length; i++) {
+    await persistPrefix(
+      redisClient,
+      prefixes[i],
+      toFullPrefix(prefixes[i], token)
+    );
+  }
+};
 
 const apiDeleteCompletions = instance => async (completions, token) => {
   const {
@@ -31,13 +40,8 @@ const apiDeleteCompletions = instance => async (completions, token) => {
     });
   });
 
-  return redisClient
-    .batch(commands)
-    .execAsync()
-    .then(async () => {
-      await persistPrefixes(redisClient, allPrefixes, token);
-      return 'persist success';
-    });
+  await redisClient.batch(commands).execAsync();
+  await removePersonalizedInMongo(redisClient, allPrefixes, token);
 };
 
 export default apiDeleteCompletions;

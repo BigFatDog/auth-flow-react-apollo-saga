@@ -33,7 +33,10 @@ const deleteCompletions = instance => (req, res, next) => {
     body: { completions },
   } = req;
 
-  instance.deleteCompletions(completions, _id);
+  instance.deleteCompletions(
+    Array.isArray(completions) ? completions : [completions],
+    _id
+  );
 
   res.sendStatus(202);
 };

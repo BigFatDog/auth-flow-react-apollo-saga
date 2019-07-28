@@ -125,8 +125,11 @@ const Search = props => {
               <IconButton
                 edge="end"
                 aria-label="Remove"
-                onClick={() => {
-                  post('/api/completions/delete', { completion: d.completion });
+                onClick={e => {
+                  e.stopPropagation();
+                  post('/api/completions/delete', {
+                    completions: d.completion,
+                  });
                 }}
               >
                 <DeleteForeverOutlinedIcon />
@@ -138,14 +141,18 @@ const Search = props => {
               className={classes.suggestionItem}
               key={d.completion}
               button
-              onClick={evt => {
-                post('/api/completion/increment', { completion: d.completion });
-                document.getElementById('search').value = d.completion;
-                setSuggestions([]);
-              }}
             >
               <ListItemIcon>{icon}</ListItemIcon>
-              <ListItemText primary={d.completion} />
+              <ListItemText
+                primary={d.completion}
+                onClick={evt => {
+                  post('/api/completion/increment', {
+                    completion: d.completion,
+                  });
+                  document.getElementById('search').value = d.completion;
+                  setSuggestions([]);
+                }}
+              />
               {tailIcon}
             </ListItem>
           );
