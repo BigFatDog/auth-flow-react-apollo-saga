@@ -16,7 +16,13 @@ const removePersonalizedInMongo = async (redisClient, prefixes, token) => {
   }
 };
 
-const apiDeleteCompletions = instance => async (completions, token) => {
+/**
+ * only personalized data can be deleted
+ *
+ * @param instance
+ * @returns {Function}
+ */
+const apiDeleteCompletions = instance => async ({ completions, token }) => {
   const {
     redisClient,
     config: { completionMaxChars, prefixMaxChars, prefixMinChars },

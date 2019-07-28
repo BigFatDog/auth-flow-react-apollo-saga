@@ -34,10 +34,10 @@ const deleteCompletions = instance => (req, res, next) => {
     body: { completions },
   } = req;
 
-  instance.deleteCompletions(
-    Array.isArray(completions) ? completions : [completions],
-    _id
-  );
+  instance.deleteCompletions({
+    completions: Array.isArray(completions) ? completions : [completions],
+    token: _id,
+  });
 
   res.sendStatus(200);
 };

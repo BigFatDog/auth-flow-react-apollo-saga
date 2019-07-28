@@ -5,7 +5,13 @@ import {
 } from '../utils/prefixUtils';
 import { persistPrefixes } from '../utils/redisUtils';
 
-const apiIncrement = instance => async ({completion, token}) => {
+/**
+ * both base data and personalized data are affected
+ *
+ * @param instance
+ * @returns {function({completion?: *, token?: *}): *}
+ */
+const apiIncrement = instance => async ({ completion, token }) => {
   const {
     redisClient,
     config: { completionMaxChars, prefixMaxChars, prefixMinChars, bucketLimit },
