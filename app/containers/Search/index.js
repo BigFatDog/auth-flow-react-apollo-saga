@@ -124,7 +124,12 @@ const Search = props => {
       </Paper>
       <Paper className={classes.resultContainer}>
         {suggestions.map(d => {
-          const icon = d.type === 'personalized' ? <HistoryIcon /> : null;
+          const icon =
+            d.type === 'personalized' ? (
+              <ListItemIcon>
+                <HistoryIcon />
+              </ListItemIcon>
+            ) : null;
           const onDeleteEntry = async e => {
             e.stopPropagation();
 
@@ -154,7 +159,7 @@ const Search = props => {
               key={d.completion + d.score + d.type || ''}
               button
             >
-              <ListItemIcon>{icon}</ListItemIcon>
+              {icon}
               <ListItemText
                 primary={d.completion}
                 onClick={evt => {
