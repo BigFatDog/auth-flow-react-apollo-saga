@@ -58,7 +58,20 @@ const Search = props => {
         )
       );
 
+      const focus$ =  fromEvent(searchBox, 'focus').pipe(
+        debounceTime(250),
+        filter(
+          query =>
+            (query.length >= 1 && query.length <= 10) ||
+            query.length === 0
+        ),
+        map(value => from(searchBackend(value)))
+      );
+
       input$.subscribe(data => {
+        setSuggestions(data);
+      });
+      focus$.subscribe(data => {
         setSuggestions(data);
       });
     }

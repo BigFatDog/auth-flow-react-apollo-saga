@@ -24,7 +24,7 @@ const saveCompletions = instance => (req, res, next) => {
     body: { completions },
   } = req;
   instance.insertCompletions(completions, _id);
-  res.sendStatus(202);
+  res.sendStatus(200);
 };
 
 const deleteCompletions = instance => (req, res, next) => {
@@ -38,7 +38,7 @@ const deleteCompletions = instance => (req, res, next) => {
     _id
   );
 
-  res.sendStatus(202);
+  res.sendStatus(200);
 };
 
 const incrementCompletion = instance => async (req, res, next) => {
@@ -52,19 +52,21 @@ const incrementCompletion = instance => async (req, res, next) => {
   } catch (error) {
     return next(error);
   }
+
+  res.sendStatus(200);
 };
 
 const dumpCompletions = instance => async (req, res, next) => {
   try {
     const data = await import('./sample.json');
 
-    res.json({ data }).sendStatus(204);
+    res.json({ data }).sendStatus(200);
     await instance.insertCompletions(data.default);
   } catch (error) {
     return next(error);
   }
 
-  res.sendStatus(204);
+  res.sendStatus(200);
 };
 
 export {
