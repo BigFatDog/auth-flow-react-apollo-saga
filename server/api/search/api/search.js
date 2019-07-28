@@ -40,27 +40,23 @@ const apiSearch = instance => async (prefixQuery, token, opts = {}) => {
     1,
     'WITHSCORES'
   );
-  const args = [
-    prefix,
-    0,
-    limit - 1,
-    'WITHSCORES',
-  ];
+  const args = [prefix, 0, limit - 1, 'WITHSCORES'];
 
-  const formattedPersonal = formatCompletionsWithScores(personalizedResult).map(d => {
-    d.type = 'personalized';
-    return d;
-  });
+  const formattedPersonal = formatCompletionsWithScores(personalizedResult).map(
+    d => {
+      d.type = 'personalized';
+      return d;
+    }
+  );
   let commonResult = await redisClient.zrangeAsync(...args);
 
   if (commonResult.length === 0) {
     await syncRedisWithMongo(redisClient, prefix);
     const newRes = await redisClient.zrangeAsync(...args);
-    return newRes
-      .map(d => {
-        d.type = 'base';
-        return d;
-      });
+    return newRes.map(d => {
+      d.type = 'base';
+      return d;
+    });
   } else {
     const flattedPersonal = formattedPersonal.map(d => d.completion);
     const formattedBase = formatCompletionsWithScores(commonResult)

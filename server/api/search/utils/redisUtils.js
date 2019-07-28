@@ -2,7 +2,7 @@ import createPrefixModel from '../model/Prefix';
 import { BASE_DOC_NAME } from '../constants';
 import { toFullPrefix } from './prefixUtils';
 
-const _persistPrefixes = async (redisClient, prefix, docName) => {
+const persistPrefix = async (redisClient, prefix, docName) => {
   const completions = await redisClient.zrangeAsync(
     prefix,
     0,
@@ -24,10 +24,10 @@ const _persistPrefixes = async (redisClient, prefix, docName) => {
 };
 const persistPrefixes = async (redisClient, prefixes, token = null) => {
   for (var i = 0; i < prefixes.length; i++) {
-    await _persistPrefixes(redisClient, prefixes[i], BASE_DOC_NAME);
+    await persistPrefix(redisClient, prefixes[i], BASE_DOC_NAME);
 
     if (token !== null) {
-      await _persistPrefixes(
+      await persistPrefix(
         redisClient,
         prefixes[i],
         toFullPrefix(prefixes[i], token)

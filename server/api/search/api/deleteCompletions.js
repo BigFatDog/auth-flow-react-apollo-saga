@@ -27,7 +27,6 @@ const apiDeleteCompletions = instance => async (completions, token) => {
     allPrefixes = [...allPrefixes, ...prefixes];
 
     prefixes.forEach(prefix => {
-      commands.push(['zrem', BASE_DOC_NAME, normalized]);
       commands.push(['zrem', toFullPrefix(prefix, token), normalized]);
     });
   });

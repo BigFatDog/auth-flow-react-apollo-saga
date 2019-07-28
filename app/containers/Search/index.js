@@ -1,19 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { fade, darken } from '@material-ui/core/styles/colorManipulator';
 import { makeStyles } from '@material-ui/core/styles';
 import SearchIcon from '@material-ui/icons/Search';
 import HistoryIcon from '@material-ui/icons/History';
+import DeleteForeverOutlinedIcon from '@material-ui/icons/DeleteForeverOutlined';
 import IconButton from '@material-ui/core/IconButton';
-import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
-import TextField from '@material-ui/core/TextField';
-import InputAdornment from '@material-ui/core/InputAdornment';
 import ListItemText from '@material-ui/core/ListItemText';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Paper from '@material-ui/core/Paper';
 import InputBase from '@material-ui/core/InputBase';
 import Divider from '@material-ui/core/Divider';
-import MenuIcon from '@material-ui/icons/Menu';
 import DirectionsIcon from '@material-ui/icons/Directions';
 import { fromEvent, from } from 'rxjs';
 import {
@@ -87,9 +84,7 @@ const Search = props => {
         ),
         distinctUntilChanged(),
         switchMap(value =>
-          value
-            ? from(searchBackend(value))
-            : from(Promise.resolve( []))
+          value ? from(searchBackend(value)) : from(Promise.resolve([]))
         )
       );
 
@@ -125,22 +120,33 @@ const Search = props => {
       <Paper className={classes.resultContainer}>
         {suggestions.map(d => {
           const icon = d.type === 'personalized' ? <HistoryIcon /> : null;
+          const tailIcon =
+            d.type === 'personalized' ? (
+              <IconButton
+                edge="end"
+                aria-label="Remove"
+                onClick={() => {
+                  post('/api/completions/delete', { completion: d.completion });
+                }}
+              >
+                <DeleteForeverOutlinedIcon />
+              </IconButton>
+            ) : null;
 
           return (
             <ListItem
               className={classes.suggestionItem}
               key={d.completion}
               button
-              onClick = {evt => {
-                post('/api/completion/increment', { completion: d.completion});
-                document.getElementById("search").value = d.completion;
+              onClick={evt => {
+                post('/api/completion/increment', { completion: d.completion });
+                document.getElementById('search').value = d.completion;
                 setSuggestions([]);
               }}
             >
-              <ListItemIcon>
-                {icon}
-              </ListItemIcon>
+              <ListItemIcon>{icon}</ListItemIcon>
               <ListItemText primary={d.completion} />
+              {tailIcon}
             </ListItem>
           );
         })}

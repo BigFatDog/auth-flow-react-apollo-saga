@@ -26,11 +26,7 @@ const apiInsertCompletions = instance => async array => {
     allPrefixes = [...allPrefixes, ...prefixes];
 
     for (const d of prefixes) {
-      const count = await redisClient.zcountAsync(
-        d,
-        '-inf',
-        '+inf'
-      );
+      const count = await redisClient.zcountAsync(d, '-inf', '+inf');
 
       if (count < bucketLimit) {
         await redisClient.zaddAsync(d, 'NX', 0, completion);
