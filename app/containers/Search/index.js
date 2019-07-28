@@ -63,7 +63,6 @@ const Search = props => {
   const searchRef = useRef(null);
   const [suggestions, setSuggestions] = useState([]);
   const [latestInput, setLatestInput] = useState(null);
-
   // useEffect(() => {
   //   get('/api/completions/dump')
   // }, [])
@@ -84,7 +83,9 @@ const Search = props => {
         debounceTime(250),
         filter(
           query =>
-            (query.length >= 1 && query.length <= 10) || query.length === 0
+            (query.length >= 1 && query.length <= 10) ||
+            query.length === 0 ||
+            suggestions.map(d => d.completion).includes(query)
         ),
         distinctUntilChanged(),
         switchMap(value =>
@@ -150,7 +151,7 @@ const Search = props => {
           return (
             <ListItem
               className={classes.suggestionItem}
-              key={d.completion}
+              key={d.completion + d.score + d.type || ''}
               button
             >
               <ListItemIcon>{icon}</ListItemIcon>
