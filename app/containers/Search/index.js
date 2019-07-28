@@ -7,7 +7,6 @@ import IconButton from '@material-ui/core/IconButton';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Paper from '@material-ui/core/Paper';
 import InputBase from '@material-ui/core/InputBase';
 import Divider from '@material-ui/core/Divider';
@@ -20,6 +19,7 @@ import {
   debounceTime,
   switchMap,
 } from 'rxjs/operators';
+import debounce from 'lodash/debounce';
 
 import { get, post } from '../../core/http/post';
 
@@ -62,6 +62,7 @@ const Search = props => {
   const classes = useStyles();
   const searchRef = useRef(null);
   const [suggestions, setSuggestions] = useState([]);
+  const [latestInput, setLatestInput] = useState(null);
 
   // useEffect(() => {
   //   get('/api/completions/dump')
@@ -70,10 +71,13 @@ const Search = props => {
   useEffect(() => {
     if (searchRef !== null) {
       const searchBox = document.getElementById('search');
-      const searchBackend = prefix =>
-        get(`/api/completions/get?prefix=${prefix}&limit=10&scores=true`).then(
-          res => res.data
-        );
+      const searchBackend = prefix => {
+        setLatestInput(prefix);
+
+        return get(
+          `/api/completions/get?prefix=${prefix}&limit=10&scores=true`
+        ).then(res => res.data);
+      };
 
       const input$ = fromEvent(searchBox, 'input').pipe(
         map(e => e.target.value),
@@ -120,17 +124,24 @@ const Search = props => {
       <Paper className={classes.resultContainer}>
         {suggestions.map(d => {
           const icon = d.type === 'personalized' ? <HistoryIcon /> : null;
+          const onDeleteEntry = async e => {
+            e.stopPropagation();
+
+            await post('/api/completions/delete', {
+              completions: d.completion,
+            });
+            const newData = await get(
+              `/api/completions/get?prefix=${latestInput}&limit=10&scores=true`
+            );
+            setSuggestions(newData.data);
+          };
+
           const tailIcon =
             d.type === 'personalized' ? (
               <IconButton
                 edge="end"
                 aria-label="Remove"
-                onClick={e => {
-                  e.stopPropagation();
-                  post('/api/completions/delete', {
-                    completions: d.completion,
-                  });
-                }}
+                onClick={debounce(onDeleteEntry, 250)}
               >
                 <DeleteForeverOutlinedIcon />
               </IconButton>
