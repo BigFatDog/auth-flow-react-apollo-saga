@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { makeStyles } from '@material-ui/core/styles';
 import SearchIcon from '@material-ui/icons/Search';
 import HistoryIcon from '@material-ui/icons/History';
 import DeleteForeverOutlinedIcon from '@material-ui/icons/DeleteForeverOutlined';
@@ -121,6 +120,7 @@ const Search = props => {
 
           return (
             <ListItem
+              component={'li'}
               className={classes.suggestionItem}
               key={d.completion + d.score + d.type || ''}
               button
