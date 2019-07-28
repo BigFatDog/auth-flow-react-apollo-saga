@@ -66,6 +66,10 @@ const Search = props => {
   const searchRef = useRef(null);
   const [suggestions, setSuggestions] = useState([]);
 
+  // useEffect(() => {
+  //   get('/api/completions/dump')
+  // }, [])
+
   useEffect(() => {
     if (searchRef !== null) {
       const searchBox = document.getElementById('search');
@@ -85,7 +89,7 @@ const Search = props => {
         switchMap(value =>
           value
             ? from(searchBackend(value))
-            : from(Promise.resolve({ items: [] }))
+            : from(Promise.resolve( []))
         )
       );
 
@@ -120,16 +124,23 @@ const Search = props => {
       </Paper>
       <Paper className={classes.resultContainer}>
         {suggestions.map(d => {
+          const icon = d.type === 'personalized' ? <HistoryIcon /> : null;
+
           return (
             <ListItem
               className={classes.suggestionItem}
               key={d.completion}
               button
+              onClick = {evt => {
+                post('/api/completion/increment', { completion: d.completion});
+                document.getElementById("search").value = d.completion;
+                setSuggestions([]);
+              }}
             >
               <ListItemIcon>
-                <HistoryIcon />
+                {icon}
               </ListItemIcon>
-              <ListItemText primary={d.completion} secondary={d.score} />
+              <ListItemText primary={d.completion} />
             </ListItem>
           );
         })}

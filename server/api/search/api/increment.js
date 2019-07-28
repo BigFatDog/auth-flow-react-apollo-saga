@@ -3,8 +3,9 @@ import {
   normalizeCompletion,
   toFullPrefix,
 } from '../utils/prefixUtils';
-import { persistPrefixes, getCompletionsCount } from '../utils/redisUtils';
-const apiIncrement = instance => async (completion, tenant) => {
+import { persistPrefixes } from '../utils/redisUtils';
+
+const apiIncrement = instance => async (completion, token) => {
   const {
     redisClient,
     config: { completionMaxChars, prefixMaxChars, prefixMinChars, bucketLimit },
@@ -20,16 +21,10 @@ const apiIncrement = instance => async (completion, tenant) => {
   );
   const commands = [];
 
-  for (let i = 0; i < prefixes.length; i++) {
-    let prefixWithTenant = toFullPrefix(prefixes[i], tenant);
-    let count = await getCompletionsCount(
-      redisClient,
-      prefixes[i],
-      tenant,
-      prefixWithTenant
-    );
+  const increaseInRedis = async key => {
+    const count = await redisClient.zcountAsync(key, '-inf', '+inf');
     const includesCompletion = await redisClient.zscoreAsync(
-      prefixWithTenant,
+      key,
       normalizedCompletions
     );
 
@@ -37,29 +32,29 @@ const apiIncrement = instance => async (completion, tenant) => {
       // Replace lowest score completion with the current completion, using the lowest score incremented by 1
       const lastPosition = bucketLimit - 1;
       const lastElement = await redisClient.zrangeAsync(
-        prefixWithTenant,
+        key,
         lastPosition,
         lastPosition,
         'WITHSCORES'
       );
       const newScore = lastElement[1] - 1;
-      commands.push(['zremrangebyrank', prefixWithTenant, lastPosition, -1]);
-      commands.push([
-        'zadd',
-        prefixWithTenant,
-        newScore,
-        normalizedCompletions,
-      ]);
+      commands.push(['zremrangebyrank', key, lastPosition, -1]);
+      commands.push(['zadd', key, newScore, normalizedCompletions]);
     } else {
-      commands.push(['zincrby', prefixWithTenant, -1, normalizedCompletions]);
+      commands.push(['zincrby', key, -1, normalizedCompletions]);
     }
+  };
+
+  for (const d of prefixes) {
+    await increaseInRedis(d);
+    await increaseInRedis(toFullPrefix(d, token));
   }
 
   return redisClient
     .batch(commands)
     .execAsync()
     .then(async () => {
-      await persistPrefixes(redisClient, prefixes, tenant);
+      await persistPrefixes(redisClient, prefixes, token);
       return 'persist success';
     });
 };

@@ -5,6 +5,7 @@ import {
   validateInputIsArray,
 } from '../utils/prefixUtils';
 import { persistPrefixes } from '../utils/redisUtils';
+import { BASE_DOC_NAME } from '../constants';
 
 const apiDeleteCompletions = instance => async (completions, token) => {
   const {
@@ -13,7 +14,7 @@ const apiDeleteCompletions = instance => async (completions, token) => {
   } = instance;
   validateInputIsArray(completions, 'deleteCompletions');
 
-  const allPrefixes = [];
+  let allPrefixes = [];
   const commands = [];
 
   completions.forEach(completion => {
@@ -23,11 +24,11 @@ const apiDeleteCompletions = instance => async (completions, token) => {
       prefixMinChars,
       normalized
     );
-    allPrefixes.concat(prefixes);
+    allPrefixes = [...allPrefixes, ...prefixes];
 
     prefixes.forEach(prefix => {
-      const prefixWithTenant = toFullPrefix(prefix, token);
-      commands.push(['zrem', prefixWithTenant, normalized]);
+      commands.push(['zrem', BASE_DOC_NAME, normalized]);
+      commands.push(['zrem', toFullPrefix(prefix, token), normalized]);
     });
   });
 

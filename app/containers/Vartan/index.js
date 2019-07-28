@@ -17,7 +17,7 @@ const expandImageData = (compressed, width, height) => {
     .range([0, scaledWidth]);
   const yScale = scaleLinear()
     .domain([0, compressed.height])
-    .range([yTranslate, scaledHeight + yTranslate]);
+    .range([0, scaledHeight]);
 
   const xStep = compressed.width / 1000;
   const yStep = compressed.height / 1000;
@@ -38,8 +38,6 @@ const expandImageData = (compressed, width, height) => {
       idx++;
     }
   }
-  console.log(idx);
-
   return pixelData;
 };
 
@@ -60,7 +58,7 @@ const loadData = (width, height) => {
   const p1 = csv('./sampled_cities_data.csv').then(citiesData =>
     citiesData.map(d => ({ continent: d.continent, lat: +d.lat, lng: +d.lng }))
   );
-  const p2 = json('./test.json').then(imgData =>
+  const p2 = json('./img.json').then(imgData =>
     processImageData(imgData, width, height)
   );
   return Promise.all([p1, p2]);

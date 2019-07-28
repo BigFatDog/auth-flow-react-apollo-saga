@@ -1,10 +1,9 @@
 import { Writable } from 'stream';
 
 class Writer extends Writable {
-  constructor(insertCompletions, token, options = { objectMode: true }) {
+  constructor(insertCompletions, options = { objectMode: true }) {
     super(options);
     this.insertCompletions = insertCompletions;
-    this.token = token;
   }
 
   static logMemory(task) {
@@ -14,12 +13,10 @@ class Writer extends Writable {
   }
 
   async _write(item, encoding, callback) {
-    let result;
-
     console.log('Writing to redis, please wait...');
     Writer.logMemory('This import');
 
-    this.insertCompletions([item], this.token)
+    this.insertCompletions([item])
       .then(() => callback())
       .catch(callback);
   }

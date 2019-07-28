@@ -1,12 +1,11 @@
 import {
   extractPrefixes,
   normalizeCompletion,
-  toFullPrefix,
   validateInputIsArray,
 } from '../utils/prefixUtils';
-import { persistPrefixes, getCompletionsCount } from '../utils/redisUtils';
+import { persistPrefixes } from '../utils/redisUtils';
 
-const apiInsertCompletions = instance => async (array, token) => {
+const apiInsertCompletions = instance => async array => {
   validateInputIsArray(array, 'insertCompletions');
 
   const {
@@ -14,7 +13,7 @@ const apiInsertCompletions = instance => async (array, token) => {
     config: { completionMaxChars, prefixMaxChars, prefixMinChars, bucketLimit },
   } = instance;
 
-  const allPrefixes = [];
+  let allPrefixes = [];
 
   for (let i = 0; i < array.length; i++) {
     const completion = normalizeCompletion(completionMaxChars, array[i]);
@@ -24,24 +23,22 @@ const apiInsertCompletions = instance => async (array, token) => {
       completion
     );
 
-    allPrefixes.concat(prefixes);
+    allPrefixes = [...allPrefixes, ...prefixes];
 
     for (const d of prefixes) {
-      const prefixWithTenant = toFullPrefix(d, token);
-      const count = await getCompletionsCount(
-        redisClient,
+      const count = await redisClient.zcountAsync(
         d,
-        token,
-        prefixWithTenant
+        '-inf',
+        '+inf'
       );
 
       if (count < bucketLimit) {
-        await redisClient.zaddAsync(prefixWithTenant, 'NX', 0, completion);
+        await redisClient.zaddAsync(d, 'NX', 0, completion);
       }
     }
   }
 
-  return persistPrefixes(redisClient, allPrefixes, token);
+  return persistPrefixes(redisClient, allPrefixes);
 };
 
 export default apiInsertCompletions;
