@@ -23,7 +23,7 @@ const persistPrefix = async (redisClient, prefix, docName) => {
   }
 };
 const persistPrefixes = async (redisClient, prefixes, token = null) => {
-  for (var i = 0; i < prefixes.length; i++) {
+  for (let i = 0; i < prefixes.length; i++) {
     await persistPrefix(redisClient, prefixes[i], BASE_DOC_NAME);
 
     if (token !== null) {

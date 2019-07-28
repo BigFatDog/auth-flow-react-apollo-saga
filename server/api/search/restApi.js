@@ -44,12 +44,14 @@ const deleteCompletions = instance => (req, res, next) => {
 
 const incrementCompletion = instance => async (req, res, next) => {
   const {
-    user: { _id },
     body: { completion },
   } = req;
 
   try {
-    await instance.increment(completion, _id);
+    await instance.increment({
+      completion,
+      token: req.user && req.user._id ? req.user._id : null,
+    });
   } catch (error) {
     return next(error);
   }

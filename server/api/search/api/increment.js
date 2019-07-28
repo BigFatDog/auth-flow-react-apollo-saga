@@ -5,7 +5,7 @@ import {
 } from '../utils/prefixUtils';
 import { persistPrefixes } from '../utils/redisUtils';
 
-const apiIncrement = instance => async (completion, token) => {
+const apiIncrement = instance => async ({completion, token}) => {
   const {
     redisClient,
     config: { completionMaxChars, prefixMaxChars, prefixMinChars, bucketLimit },
@@ -47,7 +47,7 @@ const apiIncrement = instance => async (completion, token) => {
 
   for (const d of prefixes) {
     await increaseInRedis(d);
-    await increaseInRedis(toFullPrefix(d, token));
+    if (token) await increaseInRedis(toFullPrefix(d, token));
   }
 
   return redisClient
