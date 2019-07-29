@@ -1,6 +1,5 @@
 import { withFilter } from 'graphql-subscriptions';
 import { find, filter } from 'lodash';
-import { makeExecutableSchema } from 'graphql-tools/dist/index';
 
 // example data
 const authors = [

@@ -24,9 +24,11 @@ const Header = props => {
         <Link to="/" className="nav-link">
           Home
         </Link>
-
         <Link to="/post" className="nav-link">
-          Post
+          Posts
+        </Link>
+        <Link to="/search" className="nav-link">
+          Autocomplete
         </Link>
       </NavHeader>
       <NavHeader>

@@ -1,7 +1,6 @@
 import React, { memo } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { Query } from 'react-apollo';
-import gql from 'graphql-tag';
 import messages from './messages';
 
 import PostListQuery from './Posts.graphql';

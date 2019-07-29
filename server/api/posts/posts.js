@@ -1,4 +1,6 @@
-const typeDefs = `
+import { gql } from 'apollo-server-express';
+
+const typeDefs = gql`
   type Author {
     id: Int!
     firstName: String
@@ -21,9 +23,7 @@ const typeDefs = `
 
   # this schema allows the following mutation:
   type Mutation {
-    upvotePost (
-      postId: Int!
-    ): Post
+    upvotePost(postId: Int!): Post
   }
 
   type Subscription {

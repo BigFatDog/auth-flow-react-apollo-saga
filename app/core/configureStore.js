@@ -6,7 +6,7 @@ import axios from 'axios';
 
 import { post } from './reqeust/post';
 import createReducer from '../reducers';
-import { loginSuccess, loginFailure } from './auth/actions';
+import { loginSuccess, loginFailure, verifyTokenFailure } from './auth/actions';
 import { webServerDown } from './system/actions';
 
 const sagaMiddleware = createSagaMiddleware();

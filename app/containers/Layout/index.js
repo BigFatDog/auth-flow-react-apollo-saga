@@ -19,7 +19,6 @@ export default ({ children }) => {
           className="content-wrapper"
           style={{
             position: 'relative',
-            top: '50px',
             height: 'calc(100% - 50px)',
           }}
         >
