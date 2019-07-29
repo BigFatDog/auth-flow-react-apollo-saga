@@ -2,6 +2,11 @@
 
 An SSR version of this project: [auth-flow-ssr](https://github.com/BigFatDog/auth-flow-ssr)
 
+update: Added an autocomplete feature using redis, rxjs and mongodgb.
+If you'd like to try this feature, please install redis and then launch server.
+In search page, click the battery button on the bottom right of page to seed data.
+For more information, please visist [autocomplete project page](https://github.com/BigFatDog/autocomplete)
+
 ## Setup
 1. install mongodb
 2. clone this project from https://github.com/BigFatDog/auth-flow-react-apollo-saga.git
