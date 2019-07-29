@@ -62,9 +62,8 @@ const incrementCompletion = instance => async (req, res, next) => {
 const dumpCompletions = instance => async (req, res, next) => {
   try {
     const data = await import('./sample.json');
-
-    res.json({ data }).sendStatus(200);
     await instance.insertCompletions(data.default);
+    res.json({ data }).sendStatus(200);
   } catch (error) {
     return next(error);
   }
