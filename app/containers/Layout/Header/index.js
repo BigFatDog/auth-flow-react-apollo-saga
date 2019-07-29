@@ -24,18 +24,11 @@ const Header = props => {
         <Link to="/" className="nav-link">
           Home
         </Link>
-
         <Link to="/post" className="nav-link">
-          Post
-        </Link>
-        <Link to="/realtime" className="nav-link">
-          Realtime
-        </Link>
-        <Link to="/gl" className="nav-link">
-          BigData
+          Posts
         </Link>
         <Link to="/search" className="nav-link">
-          Search
+          Autocomplete
         </Link>
       </NavHeader>
       <NavHeader>
