@@ -146,7 +146,7 @@
     "reselect": "4.0.0",
     "rxjs": "^6.5.2",
     "sanitize.css": "11.0.0",
-    "serialize-javascript": "^1.7.0",
+    "serialize-javascript": "^2.1.1",
     "styled-components": "^4.3.2",
     "subscriptions-transport-ws": "^0.9.16",
     "warning": "4.0.3",
